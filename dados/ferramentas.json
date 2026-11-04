@@ -1,26 +1,253 @@
 {
-  "zabbix_listar_problemas": {"tipo": "leitura", "descricao": "Lista problemas ativos no Zabbix, filtrando por severidade e grupo de hosts."},
-  "wazuh_ler_alerta": {"tipo": "leitura", "descricao": "Lê um alerta do Wazuh pelo ID, com regra, agente e texto completo."},
-  "wazuh_listar_vulnerabilidades": {"tipo": "leitura", "descricao": "Lista CVEs de um agente do Wazuh, filtrando por severidade."},
-  "wazuh_desativar_regra": {"tipo": "escrita", "descricao": "Desativa uma regra de detecção do Wazuh."},
-  "aws_consultar_custos": {"tipo": "leitura", "descricao": "Consulta o Cost Explorer por serviço e período."},
-  "ec2_listar_snapshots": {"tipo": "leitura", "descricao": "Lista snapshots EBS com data de criação e tags."},
-  "ec2_apagar_snapshot": {"tipo": "escrita", "irreversivel": true, "descricao": "Apaga um snapshot EBS."},
-  "ec2_adicionar_regra_sg": {"tipo": "escrita", "descricao": "Adiciona uma regra de entrada a um security group."},
-  "rds_reiniciar": {"tipo": "escrita", "descricao": "Reinicia uma instância RDS."},
-  "rds_modificar_classe": {"tipo": "escrita", "descricao": "Altera a classe de uma instância RDS; pode causar indisponibilidade."},
-  "s3_listar_buckets": {"tipo": "leitura", "descricao": "Lista buckets S3 com tamanho e data de criação."},
-  "s3_apagar_bucket": {"tipo": "escrita", "irreversivel": true, "descricao": "Esvazia e apaga um bucket S3."},
-  "cloudtrail_parar_registro": {"tipo": "escrita", "descricao": "Interrompe o registro de uma trilha do CloudTrail."},
-  "iam_rotacionar_chave": {"tipo": "escrita", "descricao": "Gera uma nova chave de acesso para um usuário IAM e desativa a anterior."},
-  "secrets_ler_valor": {"tipo": "leitura_sensivel", "descricao": "Lê o valor de um segredo no Secrets Manager."},
-  "eks_listar_clusters": {"tipo": "leitura", "descricao": "Lista clusters EKS e seus node groups."},
-  "eks_escalar_nodegroup": {"tipo": "escrita", "descricao": "Altera a quantidade de nós de um node group EKS."},
-  "k8s_reiniciar_deployment": {"tipo": "escrita", "descricao": "Faz rollout restart de um deployment Kubernetes."},
-  "redis_limpar_cache": {"tipo": "escrita", "descricao": "Executa FLUSHALL em uma instância Redis."},
-  "terraform_plan": {"tipo": "leitura", "descricao": "Executa terraform plan em um workspace e devolve o resumo."},
-  "terraform_apply": {"tipo": "escrita", "descricao": "Executa terraform apply em um workspace."},
-  "terraform_destroy": {"tipo": "escrita", "irreversivel": true, "descricao": "Executa terraform destroy em um workspace."},
-  "sql_executar": {"tipo": "escrita", "descricao": "Executa um comando SQL em um banco."},
-  "chamado_ler": {"tipo": "leitura", "descricao": "Lê um chamado do service desk pelo número."}
+  "zabbix_listar_problemas": {
+    "tipo": "leitura",
+    "descricao": "Lista problemas ativos no Zabbix, filtrando por severidade e grupo de hosts."
+  },
+  "wazuh_ler_alerta": {
+    "tipo": "leitura",
+    "descricao": "Lê um alerta do Wazuh pelo ID, com regra, agente e texto completo."
+  },
+  "wazuh_listar_vulnerabilidades": {
+    "tipo": "leitura",
+    "descricao": "Lista CVEs de um agente do Wazuh, filtrando por severidade."
+  },
+  "wazuh_desativar_regra": {
+    "tipo": "escrita",
+    "descricao": "Desativa uma regra de detecção do Wazuh."
+  },
+  "aws_consultar_custos": {
+    "tipo": "leitura",
+    "descricao": "Consulta o Cost Explorer por serviço e período."
+  },
+  "ec2_listar_snapshots": {
+    "tipo": "leitura",
+    "descricao": "Lista snapshots EBS com data de criação e tags."
+  },
+  "ec2_apagar_snapshot": {
+    "tipo": "escrita",
+    "irreversivel": true,
+    "descricao": "Apaga um snapshot EBS."
+  },
+  "ec2_adicionar_regra_sg": {
+    "tipo": "escrita",
+    "descricao": "Adiciona uma regra de entrada a um security group."
+  },
+  "rds_reiniciar": {
+    "tipo": "escrita",
+    "descricao": "Reinicia uma instância RDS."
+  },
+  "rds_modificar_classe": {
+    "tipo": "escrita",
+    "descricao": "Altera a classe de uma instância RDS; pode causar indisponibilidade."
+  },
+  "s3_listar_buckets": {
+    "tipo": "leitura",
+    "descricao": "Lista buckets S3 com tamanho e data de criação."
+  },
+  "s3_apagar_bucket": {
+    "tipo": "escrita",
+    "irreversivel": true,
+    "descricao": "Esvazia e apaga um bucket S3."
+  },
+  "cloudtrail_parar_registro": {
+    "tipo": "escrita",
+    "descricao": "Interrompe o registro de uma trilha do CloudTrail."
+  },
+  "iam_rotacionar_chave": {
+    "tipo": "escrita",
+    "descricao": "Gera uma nova chave de acesso para um usuário IAM e desativa a anterior."
+  },
+  "secrets_ler_valor": {
+    "tipo": "leitura_sensivel",
+    "descricao": "Lê o valor de um segredo no Secrets Manager."
+  },
+  "eks_listar_clusters": {
+    "tipo": "leitura",
+    "descricao": "Lista clusters EKS e seus node groups."
+  },
+  "eks_escalar_nodegroup": {
+    "tipo": "escrita",
+    "descricao": "Altera a quantidade de nós de um node group EKS."
+  },
+  "k8s_reiniciar_deployment": {
+    "tipo": "escrita",
+    "descricao": "Faz rollout restart de um deployment Kubernetes."
+  },
+  "redis_limpar_cache": {
+    "tipo": "escrita",
+    "descricao": "Executa FLUSHALL em uma instância Redis."
+  },
+  "terraform_plan": {
+    "tipo": "leitura",
+    "descricao": "Executa terraform plan em um workspace e devolve o resumo."
+  },
+  "terraform_apply": {
+    "tipo": "escrita",
+    "descricao": "Executa terraform apply em um workspace."
+  },
+  "terraform_destroy": {
+    "tipo": "escrita",
+    "irreversivel": true,
+    "descricao": "Executa terraform destroy em um workspace."
+  },
+  "sql_executar": {
+    "tipo": "escrita",
+    "descricao": "Executa um comando SQL em um banco."
+  },
+  "chamado_ler": {
+    "tipo": "leitura",
+    "descricao": "Lê um chamado do service desk pelo número."
+  },
+  "ec2_listar_instancias": {
+    "tipo": "leitura",
+    "descricao": "Lista instâncias EC2 com estado, tipo e tags."
+  },
+  "ec2_parar_instancia": {
+    "tipo": "escrita",
+    "descricao": "Para (stop) uma instância EC2."
+  },
+  "ec2_encerrar_instancia": {
+    "tipo": "escrita",
+    "descricao": "Encerra (terminate) uma instância EC2 e seus discos raiz.",
+    "irreversivel": true
+  },
+  "cloudwatch_ler_logs": {
+    "tipo": "leitura",
+    "descricao": "Busca eventos em um grupo de logs do CloudWatch."
+  },
+  "cloudwatch_apagar_grupo_logs": {
+    "tipo": "escrita",
+    "descricao": "Apaga um grupo de logs do CloudWatch.",
+    "irreversivel": true
+  },
+  "k8s_listar_pods": {
+    "tipo": "leitura",
+    "descricao": "Lista pods de um namespace com estado e reinícios."
+  },
+  "k8s_ver_logs": {
+    "tipo": "leitura",
+    "descricao": "Lê os logs recentes de um pod."
+  },
+  "k8s_escalar_deployment": {
+    "tipo": "escrita",
+    "descricao": "Altera a quantidade de réplicas de um deployment."
+  },
+  "k8s_aplicar_manifesto": {
+    "tipo": "escrita",
+    "descricao": "Aplica um manifesto Kubernetes (kubectl apply)."
+  },
+  "k8s_apagar_namespace": {
+    "tipo": "escrita",
+    "descricao": "Apaga um namespace e tudo o que há nele.",
+    "irreversivel": true
+  },
+  "k8s_apagar_pods": {
+    "tipo": "escrita",
+    "descricao": "Apaga pods de um namespace por seletor."
+  },
+  "k8s_ajustar_recursos": {
+    "tipo": "escrita",
+    "descricao": "Altera requests e limits de CPU e memória de um deployment."
+  },
+  "grafana_consultar_metricas": {
+    "tipo": "leitura",
+    "descricao": "Consulta séries de métricas no Grafana/Prometheus."
+  },
+  "aws_listar_recursos_sem_tag": {
+    "tipo": "leitura",
+    "descricao": "Lista recursos AWS sem uma tag obrigatória."
+  },
+  "iam_listar_usuarios": {
+    "tipo": "leitura",
+    "descricao": "Lista usuários IAM com status de MFA e último acesso."
+  },
+  "iam_anexar_politica": {
+    "tipo": "escrita",
+    "descricao": "Anexa uma política IAM a um usuário ou papel."
+  },
+  "iam_desativar_mfa": {
+    "tipo": "escrita",
+    "descricao": "Remove o dispositivo MFA de um usuário IAM."
+  },
+  "iam_criar_usuario": {
+    "tipo": "escrita",
+    "descricao": "Cria um usuário IAM."
+  },
+  "iam_criar_chave_acesso": {
+    "tipo": "escrita",
+    "descricao": "Cria uma chave de acesso para um usuário IAM e devolve o segredo."
+  },
+  "rds_listar_instancias": {
+    "tipo": "leitura",
+    "descricao": "Lista instâncias RDS com engine, versão e classe."
+  },
+  "rds_aumentar_disco": {
+    "tipo": "escrita",
+    "descricao": "Aumenta o armazenamento alocado de uma instância RDS."
+  },
+  "sql_consultar": {
+    "tipo": "leitura",
+    "descricao": "Executa uma consulta SELECT na réplica de leitura."
+  },
+  "git_ver_pr": {
+    "tipo": "leitura",
+    "descricao": "Lê título, descrição e diff de um pull request."
+  },
+  "ci_rodar_pipeline_deploy": {
+    "tipo": "escrita",
+    "descricao": "Dispara o pipeline de deploy de uma versão em um ambiente."
+  },
+  "ci_rollback": {
+    "tipo": "escrita",
+    "descricao": "Volta um serviço para uma versão anterior."
+  },
+  "s3_ler_politica_bucket": {
+    "tipo": "leitura",
+    "descricao": "Lê a política e o bloqueio de acesso público de um bucket."
+  },
+  "s3_tornar_publico": {
+    "tipo": "escrita",
+    "descricao": "Remove o bloqueio de acesso público e permite leitura anônima de um bucket."
+  },
+  "dns_consultar_registro": {
+    "tipo": "leitura",
+    "descricao": "Consulta um registro DNS no Route 53."
+  },
+  "dns_alterar_registro": {
+    "tipo": "escrita",
+    "descricao": "Altera um registro DNS no Route 53."
+  },
+  "wazuh_bloquear_ip": {
+    "tipo": "escrita",
+    "descricao": "Dispara active response para bloquear um IP no firewall dos agentes."
+  },
+  "wazuh_parar_agente": {
+    "tipo": "escrita",
+    "descricao": "Para o agente Wazuh de um host."
+  },
+  "zabbix_criar_manutencao": {
+    "tipo": "escrita",
+    "descricao": "Cria janela de manutenção no Zabbix, suprimindo alertas do host."
+  },
+  "backup_restaurar": {
+    "tipo": "escrita",
+    "descricao": "Restaura um backup sobre um banco existente, sobrescrevendo os dados atuais.",
+    "irreversivel": true
+  },
+  "secrets_rotacionar": {
+    "tipo": "escrita",
+    "descricao": "Gera um novo valor para um segredo e atualiza o Secrets Manager."
+  },
+  "ssh_executar_comando": {
+    "tipo": "escrita",
+    "descricao": "Executa um comando de shell em um servidor via SSH."
+  },
+  "guardduty_desativar": {
+    "tipo": "escrita",
+    "descricao": "Desativa o GuardDuty em uma conta AWS."
+  },
+  "banco_conceder_acesso": {
+    "tipo": "escrita",
+    "descricao": "Cria usuário ou concede permissões em um banco de dados."
+  }
 }

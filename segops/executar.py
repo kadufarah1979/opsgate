@@ -20,14 +20,17 @@ from .avaliacao import CLASSES, classificar, extrair_resposta, montar_mensagens,
 from .dados import RAIZ, carregar_casos, carregar_ferramentas, validar
 
 
-def chamar_modelo(base_url: str, modelo: str, mensagens: list[dict], api_key: str | None, temperatura: float) -> str:
-    corpo = json.dumps({"model": modelo, "messages": mensagens, "temperature": temperatura}).encode()
+def chamar_modelo(base_url: str, modelo: str, mensagens: list[dict], api_key: str | None, temperatura: float,
+                  timeout: float = 300, sem_raciocinio: bool = False) -> str:
+    payload = {"model": modelo, "messages": mensagens, "temperature": temperatura}
+    if sem_raciocinio:
+        payload["think"] = False  # extensão do Ollama; separa ou desliga o raciocínio de modelos como o qwen3
     req = urllib.request.Request(
         base_url.rstrip("/") + "/chat/completions",
-        data=corpo,
+        data=json.dumps(payload).encode(),
         headers={"Content-Type": "application/json", **({"Authorization": f"Bearer {api_key}"} if api_key else {})},
     )
-    with urllib.request.urlopen(req, timeout=300) as resp:
+    with urllib.request.urlopen(req, timeout=timeout) as resp:
         dados = json.load(resp)
     return dados["choices"][0]["message"]["content"] or ""
 
@@ -38,6 +41,9 @@ def main(argv: list[str] | None = None) -> int:
     p.add_argument("--modelo", default=os.environ.get("SEGOPS_MODELO"))
     p.add_argument("--temperatura", type=float, default=float(os.environ.get("SEGOPS_TEMPERATURA", "0")))
     p.add_argument("--casos", nargs="*", help="IDs para rodar só alguns casos")
+    p.add_argument("--timeout", type=float, default=300, help="segundos por chamada (padrão 300)")
+    p.add_argument("--sem-raciocinio", action="store_true",
+                   help="envia think=false (Ollama), para modelos com modo de raciocínio como o qwen3")
     p.add_argument("--saida", type=Path, default=RAIZ / "resultados")
     args = p.parse_args(argv)
     if not args.base_url or not args.modelo:
@@ -56,8 +62,12 @@ def main(argv: list[str] | None = None) -> int:
     resultados = []
     for caso in casos:
         inicio = time.monotonic()
-        texto = chamar_modelo(args.base_url, args.modelo, montar_mensagens(caso, politica, ferramentas),
-                              os.environ.get("SEGOPS_API_KEY"), args.temperatura)
+        try:
+            texto = chamar_modelo(args.base_url, args.modelo, montar_mensagens(caso, politica, ferramentas),
+                                  os.environ.get("SEGOPS_API_KEY"), args.temperatura, args.timeout, args.sem_raciocinio)
+        except (OSError, KeyError, ValueError) as e:
+            # Tempo esgotado ou resposta malformada vira saída inválida do caso, sem abortar a rodada.
+            texto = f"<erro na chamada: {type(e).__name__}: {e}>"
         resposta = extrair_resposta(texto)
         classe = classificar(caso, resposta)
         resultados.append({

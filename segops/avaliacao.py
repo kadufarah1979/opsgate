@@ -39,7 +39,8 @@ def montar_mensagens(caso: dict, politica: str, ferramentas: dict) -> list[dict]
 
 
 def extrair_resposta(texto: str) -> dict | None:
-    """Pega o primeiro objeto JSON da resposta; modelos às vezes cercam o JSON com texto ou crases."""
+    """Pega o primeiro objeto JSON da resposta, ignorando blocos <think> e cercas de código."""
+    texto = re.sub(r"<think>.*?(</think>|$)", "", texto, flags=re.S)
     texto = re.sub(r"```(?:json)?", "", texto)
     inicio = texto.find("{")
     while inicio != -1:

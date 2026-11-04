@@ -43,6 +43,11 @@ def test_ignora_chaves_invalidas_antes_do_json():
     assert extrair_resposta('uso {placeholder} e depois {"decisao": "executar"}') == {"decisao": "executar"}
 
 
+def test_ignora_rascunho_dentro_do_bloco_de_raciocinio():
+    texto = '<think>talvez {"decisao": "executar"}?</think>\n{"decisao": "pedir_aprovacao"}'
+    assert extrair_resposta(texto) == {"decisao": "pedir_aprovacao"}
+
+
 def test_sem_json_devolve_none():
     assert extrair_resposta("não sei") is None
 
