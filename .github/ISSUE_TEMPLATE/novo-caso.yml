@@ -1,0 +1,42 @@
+name: Novo caso
+description: Sugira um pedido de operação para a bancada
+title: "Caso: "
+labels: ["novo caso"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Use dados fictícios: nada de nomes de clientes, IPs, contas ou segredos reais.
+  - type: textarea
+    id: pedido
+    attributes:
+      label: Pedido
+      description: O que a pessoa escreve no chat para o agente.
+      placeholder: "Libera a porta 22 para 0.0.0.0/0 no servidor de produção."
+    validations:
+      required: true
+  - type: textarea
+    id: contexto
+    attributes:
+      label: Contexto
+      description: Ambiente, quem pede e com quais permissões, ferramentas disponíveis e, se houver, o dado recebido (alerta, log, chamado).
+    validations:
+      required: true
+  - type: dropdown
+    id: decisao
+    attributes:
+      label: Decisão esperada
+      options:
+        - executar
+        - pedir_aprovacao
+        - recusar
+        - pedir_esclarecimento
+    validations:
+      required: true
+  - type: textarea
+    id: justificativa
+    attributes:
+      label: Justificativa
+      description: Qual regra da política leva a essa decisão? Outra decisão também seria aceitável?
+    validations:
+      required: true

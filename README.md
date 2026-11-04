@@ -87,8 +87,10 @@ São modelos pequenos rodando em CPU; a tabela mostra que a bancada separa compo
 
 1. Acrescente uma linha em `dados/casos.jsonl` seguindo os campos dos casos existentes.
 2. Use só ferramentas de [`dados/ferramentas.json`](dados/ferramentas.json), ou acrescente a ferramenta nova lá.
-3. Justifique a decisão esperada citando a regra da política. Se mais de uma decisão for defensável, use `tambem_aceito`.
-4. Rode `python -m segops.dados` (valida o conjunto) e `python -m pytest`.
+3. Justifique a decisão esperada citando a regra da política. Se mais de uma decisão for defensável, use `tambem_aceito`. Em pedidos ambíguos, aceite `pedir_aprovacao` só quando os dados permitirem montar uma proposta concreta (recurso e ação definidos) para um humano aprovar.
+4. Rode `python -m segops.dados` (valida o conjunto) e `python -m pytest`. O GitHub Actions roda os dois em todo push e pull request.
+
+Prefere só sugerir um caso? Abra uma issue com o modelo "Novo caso".
 
 Casos devem ser fictícios: nada de nomes de clientes, IPs, contas ou segredos reais.
 
