@@ -16,13 +16,17 @@ import urllib.request
 from datetime import datetime, timezone
 from pathlib import Path
 
-from .avaliacao import CLASSES, classificar, extrair_resposta, montar_mensagens, resumir
+from .avaliacao import (CLASSES, MAX_TURNOS, MODOS, classificar, decisao_por_chamadas, extrair_resposta,
+                        ferramentas_openai, montar_mensagens, resumir, saida_simulada)
 from .dados import RAIZ, carregar_casos, carregar_ferramentas, validar
 
 
 def chamar_modelo(base_url: str, modelo: str, mensagens: list[dict], api_key: str | None, temperatura: float,
-                  timeout: float = 300, sem_raciocinio: bool = False) -> str:
+                  timeout: float = 300, sem_raciocinio: bool = False, tools: list[dict] | None = None) -> dict:
+    """Devolve a mensagem do assistente (content e, no modo ferramentas, tool_calls)."""
     payload = {"model": modelo, "messages": mensagens, "temperature": temperatura}
+    if tools:
+        payload["tools"] = tools
     if sem_raciocinio:
         payload["think"] = False  # extensão do Ollama; separa ou desliga o raciocínio de modelos como o qwen3
     req = urllib.request.Request(
@@ -32,7 +36,7 @@ def chamar_modelo(base_url: str, modelo: str, mensagens: list[dict], api_key: st
     )
     with urllib.request.urlopen(req, timeout=timeout) as resp:
         dados = json.load(resp)
-    return dados["choices"][0]["message"]["content"] or ""
+    return dados["choices"][0]["message"]
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -44,6 +48,8 @@ def main(argv: list[str] | None = None) -> int:
     p.add_argument("--timeout", type=float, default=300, help="segundos por chamada (padrão 300)")
     p.add_argument("--sem-raciocinio", action="store_true",
                    help="envia think=false (Ollama), para modelos com modo de raciocínio como o qwen3")
+    p.add_argument("--modo", choices=MODOS, default="json",
+                   help="json: o modelo declara a decisão; ferramentas: a decisão é inferida das ferramentas que ele chama")
     p.add_argument("--saida", type=Path, default=RAIZ / "resultados")
     args = p.parse_args(argv)
     if not args.base_url or not args.modelo:
@@ -59,30 +65,61 @@ def main(argv: list[str] | None = None) -> int:
         casos = [c for c in casos if c["id"] in set(args.casos)]
     politica = (RAIZ / "politica" / "politica_base.md").read_text(encoding="utf-8")
 
+    def chamar(mensagens: list[dict], tools: list[dict] | None) -> dict:
+        try:
+            return chamar_modelo(args.base_url, args.modelo, mensagens, os.environ.get("SEGOPS_API_KEY"),
+                                 args.temperatura, args.timeout, args.sem_raciocinio, tools)
+        except OSError as e:
+            # Tempo esgotado, erro HTTP (ex.: modelo sem suporte a ferramentas) ou rede: saída inválida do caso,
+            # sem abortar a rodada.
+            return {"content": f"<erro na chamada: {type(e).__name__}: {e}>"}
+        except (KeyError, ValueError) as e:
+            return {"content": f"<resposta malformada: {type(e).__name__}: {e}>"}
+
+    def rodar_caso(caso: dict, args, politica: str, ferramentas: dict) -> tuple[dict | None, str]:
+        mensagens = montar_mensagens(caso, politica, ferramentas, args.modo)
+        if args.modo == "json":
+            bruta = chamar(mensagens, None).get("content") or ""
+            return extrair_resposta(bruta), bruta
+        # Modo ferramentas: leituras recebem uma saída simulada e o modelo continua, até chamar algo com efeito,
+        # uma ferramenta de controle, parar de chamar ferramentas ou esgotar os turnos.
+        tools = ferramentas_openai(caso, ferramentas)
+        chamadas: list[str] = []
+        historico = []
+        for _ in range(MAX_TURNOS):
+            msg = chamar(mensagens, tools)
+            tool_calls = msg.get("tool_calls") or []
+            historico.append({"content": msg.get("content"), "tool_calls": tool_calls})
+            nomes = [c["function"]["name"] for c in tool_calls]
+            chamadas += nomes
+            so_leitura = nomes and all(ferramentas.get(n, {}).get("tipo") == "leitura" for n in nomes)
+            if not so_leitura:
+                break
+            mensagens = mensagens + [{"role": "assistant", "content": msg.get("content") or "", "tool_calls": tool_calls}]
+            mensagens += [{"role": "tool", "tool_call_id": c.get("id", ""), "content": saida_simulada(caso, c["function"]["name"])}
+                          for c in tool_calls]
+        return decisao_por_chamadas(chamadas, ferramentas), json.dumps(historico, ensure_ascii=False)
+
     resultados = []
     for caso in casos:
         inicio = time.monotonic()
-        try:
-            texto = chamar_modelo(args.base_url, args.modelo, montar_mensagens(caso, politica, ferramentas),
-                                  os.environ.get("SEGOPS_API_KEY"), args.temperatura, args.timeout, args.sem_raciocinio)
-        except (OSError, KeyError, ValueError) as e:
-            # Tempo esgotado ou resposta malformada vira saída inválida do caso, sem abortar a rodada.
-            texto = f"<erro na chamada: {type(e).__name__}: {e}>"
-        resposta = extrair_resposta(texto)
+        resposta, bruta = rodar_caso(caso, args, politica, ferramentas)
         classe = classificar(caso, resposta)
         resultados.append({
             "id": caso["id"], "categoria": caso["categoria"], "esperado": caso["esperado"],
             "decisao": (resposta or {}).get("decisao"), "ferramenta": (resposta or {}).get("ferramenta"),
-            "classe": classe, "segundos": round(time.monotonic() - inicio, 1), "resposta_bruta": texto,
+            "efeito": (resposta or {}).get("efeito"),
+            "classe": classe, "segundos": round(time.monotonic() - inicio, 1), "resposta_bruta": bruta,
         })
         print(f"{caso['id']:<8} esperado={caso['esperado']:<21} obtido={str((resposta or {}).get('decisao')):<21} {classe}")
 
     resumo = resumir(resultados)
     carimbo = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
     args.saida.mkdir(parents=True, exist_ok=True)
-    arquivo = args.saida / f"{carimbo}_{args.modelo.replace('/', '_').replace(':', '-')}.json"
-    arquivo.write_text(json.dumps({"modelo": args.modelo, "temperatura": args.temperatura, "resumo": resumo,
-                                   "resultados": resultados}, ensure_ascii=False, indent=2), encoding="utf-8")
+    arquivo = args.saida / f"{carimbo}_{args.modelo.replace('/', '_').replace(':', '-')}_{args.modo}.json"
+    arquivo.write_text(json.dumps({"modelo": args.modelo, "modo": args.modo, "temperatura": args.temperatura,
+                                   "resumo": resumo, "resultados": resultados}, ensure_ascii=False, indent=2),
+                       encoding="utf-8")
     print(f"\nAcertos: {resumo['acertos']}/{resumo['total']} ({resumo['taxa_acerto']:.0%})")
     print("Por classe: " + ", ".join(f"{c}={resumo['por_classe'][c]}" for c in CLASSES))
     print(f"Relatório: {arquivo}")

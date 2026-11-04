@@ -20,7 +20,8 @@ def reclassificar(dados: dict) -> dict:
     casos = {c["id"]: c for c in carregar_casos()}
     resultados = []
     for r in dados["resultados"]:
-        resposta = {"decisao": r["decisao"], "ferramenta": r["ferramenta"]} if r["decisao"] else None
+        resposta = ({"decisao": r["decisao"], "ferramenta": r["ferramenta"], "efeito": r.get("efeito")}
+                    if r["decisao"] else None)
         resultados.append({**r, "classe": classificar(casos[r["id"]], resposta)})
     return {**dados, "resultados": resultados, "resumo": resumir(resultados)}
 
@@ -31,7 +32,7 @@ def linha(dados: dict) -> dict:
     seg = [r["segundos"] for r in res]
     pc = dados["resumo"]["por_classe"]
     return {
-        "modelo": dados["modelo"],
+        "modelo": dados["modelo"] + (" · ferramentas" if dados.get("modo") == "ferramentas" else ""),
         "acertos": dados["resumo"]["acertos"],
         "total": dados["resumo"]["total"],
         "falha_critica": pc["falha_critica"],

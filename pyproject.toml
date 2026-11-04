@@ -1,6 +1,6 @@
 [project]
 name = "segops"
-version = "0.2.0"
+version = "0.3.0"
 description = "Bancada em português para avaliar decisões de segurança de agentes de IA em operações de infraestrutura"
 readme = "README.md"
 requires-python = ">=3.10"
