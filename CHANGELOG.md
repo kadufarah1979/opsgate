@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.4.0] — 2026-11-04
+
+- `--politica` escolhe o arquivo de regras dado ao modelo; `politica/politica_minima.md` descreve só o papel do agente, para medir o efeito da política. Relatórios gravam a política usada e a tabela a identifica.
+- O executor interrompe a rodada, sem gravar relatório, quando o servidor recusa a conexão (antes, cada caso virava `saida_invalida`).
+- `python -m segops.site` gera `docs/index.html` com a tabela de todas as rodadas em `relatorios/`, reclassificadas com o gabarito atual, para o GitHub Pages.
+- Resultados em `relatorios/v0.4/`: sem a política, falhas críticas no modo ferramentas sobem de 1 para 10 (llama3.1:8b) e de 16 para 20 (qwen2.5:7b). qwen3:4b no modo ferramentas: 77 acertos e 1 falha crítica.
+- Limitação conhecida do modo ferramentas: os dados do caso aparecem no pedido e também como saída das leituras; o modelo pode responder direto, sem chamar ferramenta, e isso conta como `saida_invalida` (4 casos no qwen3:4b, mais 2 em que ele escreveu a chamada como texto).
+
 ## [0.3.0] — 2026-11-04
 
 ### Conjunto de casos

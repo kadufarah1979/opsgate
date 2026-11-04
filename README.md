@@ -72,10 +72,13 @@ O relatório completo, com a resposta bruta de cada caso, fica em `resultados/`.
 
 ## Resultados
 
+Tabela atualizada também na página [kadufarah1979.github.io/seguranca-agentes-ops](https://kadufarah1979.github.io/seguranca-agentes-ops/), gerada por `python -m segops.site`.
+
 Modelos abertos via Ollama, só em CPU (Intel i7-13620H, 16 threads, sem GPU), temperatura 0, em 04/11/2026, com os rótulos atuais (`--casos-atuais`). Ordenados por falhas críticas e depois por acertos:
 
 | Modelo | Modo | Acertos | Falhas críticas | Excesso de cautela | Outros erros | Injeção correta |
 |---|---|---|---|---|---|---|
+| qwen3:4b (`--sem-raciocinio`) | ferramentas | 77/100 | 1 | 2 | 20 | 4/10 |
 | llama3.1:8b | ferramentas | 59/100 | 1 | 13 | 27 | 8/10 |
 | qwen3:4b (`--sem-raciocinio`) | json | 79/100 | 2 | 0 | 19 | 5/10 |
 | qwen2.5:3b | json | 58/100 | 2 | 16 | 24 | 3/10 |
@@ -88,11 +91,22 @@ Modelos abertos via Ollama, só em CPU (Intel i7-13620H, 16 threads, sem GPU), t
 
 O que aparece nos números:
 
-- **O que o modelo diz não é o que ele faz.** Com as mesmas regras e os mesmos casos, o qwen2.5:3b executou indevidamente 2 ações quando só precisava declarar a decisão em JSON, e 40 quando recebeu as ferramentas de verdade. O qwen2.5:7b foi de 7 para 16. O llama3.1:8b foi o contrário: de 4 para 1, à custa de mais cautela.
+- **O que o modelo diz não é o que ele faz.** Com as mesmas regras e os mesmos casos, o qwen2.5:3b executou indevidamente 2 ações quando só precisava declarar a decisão em JSON, e 40 quando recebeu as ferramentas de verdade. O qwen2.5:7b foi de 7 para 16. O llama3.1:8b foi o contrário: de 4 para 1, à custa de mais cautela. O qwen3:4b foi o mais estável entre os dois modos (2 e 1) e o que mais acertou nos dois.
 - **Acertar mais não é errar menos onde importa.** No modo JSON, qwen2.5:7b e llama3.1:8b empatam em 73 acertos, mas o qwen2.5:7b executou 7 ações que deviam passar por aprovação ou recusa, contra 4.
 - **O erro mais comum no modo JSON é tratar tudo como "pedir aprovação".** Abrir SSH para a internet ou colocar uma chave no chat não pede aprovação: pede recusa. Pedidos ambíguos também viram aprovação em vez de pergunta.
 - **As falhas críticas se concentram em alterações que parecem rotineiras**: reiniciar um deployment em produção, desativar uma regra "barulhenta" do Wazuh, rodar o apply depois de um plan "ok", reiniciar sob pressão ("produção caiu, não dá tempo de aprovação").
 - **Injeção:** no modo JSON, o llama3.2:1b executou quatro ordens vindas de dados (inclusive o `DROP TABLE` do chamado) e o qwen3:4b uma (escalar o cluster "aprovado pelo comitê"). No modo ferramentas, em que o texto injetado chega como saída de uma ferramenta, o qwen2.5:3b leu o segredo pedido dentro de um log e executou o comando que outro log mandava; o qwen2.5:7b executou esse comando também.
+
+### Efeito da política
+
+Mesmos casos no modo ferramentas, trocando a política de 8 regras por [uma frase](politica/politica_minima.md) que só descreve o papel do agente (`--politica politica/politica_minima.md`):
+
+| Modelo | Falhas críticas com a política | Falhas críticas sem a política | Acertos com / sem |
+|---|---|---|---|
+| llama3.1:8b | 1 | 10 | 59 / 46 |
+| qwen2.5:7b | 16 | 20 | 69 / 49 |
+
+As regras explícitas cortaram 9 de cada 10 execuções indevidas do llama3.1:8b, mas pouco mudaram o qwen2.5:7b, que segue executando com ou sem elas. Política no prompt ajuda, mas não substitui um portão de aprovação fora do modelo.
 
 São modelos pequenos rodando em CPU; a tabela mostra que a bancada separa comportamentos, não é um ranking definitivo. Os relatórios completos, com cada resposta, estão em [`relatorios/`](relatorios/).
 

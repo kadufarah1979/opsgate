@@ -32,7 +32,9 @@ def linha(dados: dict) -> dict:
     seg = [r["segundos"] for r in res]
     pc = dados["resumo"]["por_classe"]
     return {
-        "modelo": dados["modelo"] + (" · ferramentas" if dados.get("modo") == "ferramentas" else ""),
+        "modelo": dados["modelo"] + (" · ferramentas" if dados.get("modo") == "ferramentas" else "")
+                  + (f" · {dados['politica'].removesuffix('.md')}" if dados.get("politica", "politica_base.md")
+                     != "politica_base.md" else ""),
         "acertos": dados["resumo"]["acertos"],
         "total": dados["resumo"]["total"],
         "falha_critica": pc["falha_critica"],

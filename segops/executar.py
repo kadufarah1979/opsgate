@@ -12,6 +12,7 @@ import json
 import os
 import sys
 import time
+import urllib.error
 import urllib.request
 from datetime import datetime, timezone
 from pathlib import Path
@@ -19,6 +20,10 @@ from pathlib import Path
 from .avaliacao import (CLASSES, MAX_TURNOS, MODOS, classificar, decisao_por_chamadas, extrair_resposta,
                         ferramentas_openai, montar_mensagens, resumir, saida_simulada)
 from .dados import RAIZ, carregar_casos, carregar_ferramentas, validar
+
+
+class ServidorInacessivel(RuntimeError):
+    """O endpoint recusou a conexão; a rodada é interrompida sem gravar relatório."""
 
 
 def chamar_modelo(base_url: str, modelo: str, mensagens: list[dict], api_key: str | None, temperatura: float,
@@ -50,6 +55,8 @@ def main(argv: list[str] | None = None) -> int:
                    help="envia think=false (Ollama), para modelos com modo de raciocínio como o qwen3")
     p.add_argument("--modo", choices=MODOS, default="json",
                    help="json: o modelo declara a decisão; ferramentas: a decisão é inferida das ferramentas que ele chama")
+    p.add_argument("--politica", type=Path, default=RAIZ / "politica" / "politica_base.md",
+                   help="arquivo com as regras dadas ao modelo (ex.: politica/politica_minima.md, sem regras)")
     p.add_argument("--saida", type=Path, default=RAIZ / "resultados")
     args = p.parse_args(argv)
     if not args.base_url or not args.modelo:
@@ -63,12 +70,17 @@ def main(argv: list[str] | None = None) -> int:
         return 2
     if args.casos:
         casos = [c for c in casos if c["id"] in set(args.casos)]
-    politica = (RAIZ / "politica" / "politica_base.md").read_text(encoding="utf-8")
+    politica = args.politica.read_text(encoding="utf-8")
 
     def chamar(mensagens: list[dict], tools: list[dict] | None) -> dict:
         try:
             return chamar_modelo(args.base_url, args.modelo, mensagens, os.environ.get("SEGOPS_API_KEY"),
                                  args.temperatura, args.timeout, args.sem_raciocinio, tools)
+        except urllib.error.URLError as e:
+            if isinstance(e.reason, ConnectionRefusedError):
+                # Servidor fora do ar: continuar só encheria o relatório de saídas inválidas falsas.
+                raise ServidorInacessivel(str(e.reason)) from e
+            return {"content": f"<erro na chamada: {type(e).__name__}: {e}>"}
         except OSError as e:
             # Tempo esgotado, erro HTTP (ex.: modelo sem suporte a ferramentas) ou rede: saída inválida do caso,
             # sem abortar a rodada.
@@ -103,7 +115,12 @@ def main(argv: list[str] | None = None) -> int:
     resultados = []
     for caso in casos:
         inicio = time.monotonic()
-        resposta, bruta = rodar_caso(caso, args, politica, ferramentas)
+        try:
+            resposta, bruta = rodar_caso(caso, args, politica, ferramentas)
+        except ServidorInacessivel as e:
+            print(f"\nServidor inacessível em {caso['id']} ({e}); rodada interrompida, nenhum relatório gravado.",
+                  file=sys.stderr)
+            return 3
         classe = classificar(caso, resposta)
         resultados.append({
             "id": caso["id"], "categoria": caso["categoria"], "esperado": caso["esperado"],
@@ -116,8 +133,10 @@ def main(argv: list[str] | None = None) -> int:
     resumo = resumir(resultados)
     carimbo = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
     args.saida.mkdir(parents=True, exist_ok=True)
-    arquivo = args.saida / f"{carimbo}_{args.modelo.replace('/', '_').replace(':', '-')}_{args.modo}.json"
-    arquivo.write_text(json.dumps({"modelo": args.modelo, "modo": args.modo, "temperatura": args.temperatura,
+    sufixo = "" if args.politica.name == "politica_base.md" else f"_{args.politica.stem}"
+    arquivo = args.saida / f"{carimbo}_{args.modelo.replace('/', '_').replace(':', '-')}_{args.modo}{sufixo}.json"
+    arquivo.write_text(json.dumps({"modelo": args.modelo, "modo": args.modo, "politica": args.politica.name,
+                                   "temperatura": args.temperatura,
                                    "resumo": resumo, "resultados": resultados}, ensure_ascii=False, indent=2),
                        encoding="utf-8")
     print(f"\nAcertos: {resumo['acertos']}/{resumo['total']} ({resumo['taxa_acerto']:.0%})")
