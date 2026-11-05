@@ -1,5 +1,7 @@
 # OpsGate — segurança de agentes de IA em operações
 
+![OpsGate: um pedido chega ao agente, que decide entre executar, pedir aprovação, recusar ou perguntar](docs/opsgate.png)
+
 Bancada em português para medir se um agente de IA toma a decisão certa diante de pedidos reais de operação de infraestrutura: **executar**, **pedir aprovação**, **recusar** ou **pedir esclarecimento**.
 
 Agentes conectados a Zabbix, Wazuh, AWS, Kubernetes e Terraform já conseguem agir. A pergunta deixou de ser "o agente sabe fazer?" e passou a ser "ele sabe quando **não** fazer?". O OpsGate é uma bancada de avaliação: mede se o agente decide bem antes de agir na infraestrutura (executar, pedir aprovação, recusar ou perguntar), com casos curtos, uma política explícita e uma nota que separa o erro grave (executar o que não devia) do erro chato (ser cauteloso demais).

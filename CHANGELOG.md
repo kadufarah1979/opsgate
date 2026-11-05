@@ -1,5 +1,10 @@
 # Changelog
 
+## [Não lançado]
+
+- Imagem de divulgação em `docs/opsgate.png` (fonte em `docs/opsgate.svg`), no topo do README.
+- A página gerada por `python -m opsgate.site` traz as etiquetas Open Graph: o link da página, colado no LinkedIn ou em outra rede, mostra a imagem, o título e a descrição.
+
 ## [0.6.0] — 2026-11-05
 
 - O projeto passa a se chamar **OpsGate** (antes: segops). Repositório em `github.com/kadufarah1979/opsgate` (o endereço antigo redireciona) e página em `kadufarah1979.github.io/opsgate` (o endereço antigo da página deixa de existir).

@@ -1,0 +1,106 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="640" viewBox="0 0 1280 640" font-family="Noto Sans, DejaVu Sans, Arial, sans-serif">
+  <defs>
+    <linearGradient id="fundo" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#1B4744"/>
+      <stop offset="1" stop-color="#112E2C"/>
+    </linearGradient>
+    <marker id="seta" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+      <path d="M0,0 L10,5 L0,10 z" fill="#8FA8A3"/>
+    </marker>
+  </defs>
+
+  <rect width="1280" height="640" fill="url(#fundo)"/>
+  <!-- grade discreta -->
+  <g stroke="#FFFFFF" stroke-opacity="0.035">
+    <path d="M0 80H1280M0 160H1280M0 240H1280M0 320H1280M0 400H1280M0 480H1280M0 560H1280"/>
+    <path d="M80 0V640M160 0V640M240 0V640M320 0V640M400 0V640M480 0V640M560 0V640M640 0V640M720 0V640M800 0V640M880 0V640M960 0V640M1040 0V640M1120 0V640M1200 0V640"/>
+  </g>
+
+  <!-- marca: portão -->
+  <g transform="translate(80,92)">
+    <rect x="0" y="0" width="14" height="70" rx="3" fill="#C56A39"/>
+    <rect x="62" y="0" width="14" height="70" rx="3" fill="#C56A39"/>
+    <rect x="-6" y="10" width="88" height="10" rx="5" fill="#E8915E"/>
+    <rect x="22" y="34" width="32" height="6" rx="3" fill="#E8915E" opacity="0.55"/>
+  </g>
+
+  <!-- título -->
+  <text x="78" y="258" font-size="96" font-weight="700" fill="#FFFFFF" letter-spacing="-2">OpsGate</text>
+  <text x="80" y="322" font-size="34" fill="#E6EEEB">Seu agente de IA sabe</text>
+  <text x="80" y="366" font-size="34" fill="#E6EEEB">quando <tspan font-weight="700" fill="#E8915E">não</tspan> executar?</text>
+
+  <!-- números -->
+  <g font-size="21" fill="#BFD0CC">
+    <circle cx="88" cy="434" r="5" fill="#C56A39"/>
+    <text x="104" y="441"><tspan font-weight="700" fill="#FFFFFF">100</tspan> pedidos reais de operação</text>
+    <circle cx="88" cy="472" r="5" fill="#C56A39"/>
+    <text x="104" y="479">Zabbix · Wazuh · AWS · Kubernetes · Terraform</text>
+    <circle cx="88" cy="510" r="5" fill="#C56A39"/>
+    <text x="104" y="517"><tspan font-weight="700" fill="#FFFFFF">10</tspan> com instrução injetada em alertas e chamados</text>
+  </g>
+
+  <text x="80" y="592" font-size="22" font-weight="700" fill="#E8915E">github.com/kadufarah1979/opsgate</text>
+
+  <!-- divisória -->
+  <line x1="640" y1="70" x2="640" y2="570" stroke="#FFFFFF" stroke-opacity="0.12" stroke-width="2"/>
+
+  <!-- pedido -->
+  <g transform="translate(676,80)">
+    <rect width="300" height="84" rx="16" fill="#FFFFFF" fill-opacity="0.08" stroke="#FFFFFF" stroke-opacity="0.18"/>
+    <path d="M110 84 L124 102 L136 84 z" fill="#FFFFFF" fill-opacity="0.08"/>
+    <text x="20" y="34" font-size="18" fill="#E6EEEB">“Produção caiu, reinicia</text>
+    <text x="20" y="62" font-size="18" fill="#E6EEEB">agora, sem aprovação.”</text>
+  </g>
+
+  <!-- agente -->
+  <g transform="translate(800,330)">
+    <line x1="0" y1="-144" x2="0" y2="-66" stroke="#8FA8A3" stroke-width="2.5" marker-end="url(#seta)"/>
+    <circle r="58" fill="#0E2523" stroke="#C56A39" stroke-width="4"/>
+    <rect x="-26" y="-20" width="52" height="38" rx="10" fill="none" stroke="#FFFFFF" stroke-width="3.5"/>
+    <circle cx="-11" cy="-1" r="5" fill="#FFFFFF"/>
+    <circle cx="11" cy="-1" r="5" fill="#FFFFFF"/>
+    <line x1="0" y1="-20" x2="0" y2="-32" stroke="#FFFFFF" stroke-width="3.5"/>
+    <circle cx="0" cy="-35" r="4" fill="#FFFFFF"/>
+    <text x="0" y="88" font-size="18" fill="#BFD0CC" text-anchor="middle">agente</text>
+  </g>
+
+  <!-- ramos -->
+  <g fill="none" stroke="#8FA8A3" stroke-width="2.5" marker-end="url(#seta)">
+    <path d="M858 318 C 900 300, 900 226, 938 226"/>
+    <path d="M858 326 C 900 322, 905 318, 938 318"/>
+    <path d="M858 336 C 900 345, 905 410, 938 410"/>
+    <path d="M858 346 C 900 380, 900 502, 938 502"/>
+  </g>
+
+  <!-- decisões -->
+  <g font-size="26" font-weight="700" fill="#FFFFFF">
+    <g transform="translate(944,196)">
+      <rect width="296" height="60" rx="30" fill="#FFFFFF" fill-opacity="0.07" stroke="#5FB37A" stroke-width="2"/>
+      <circle cx="30" cy="30" r="18" fill="#5FB37A"/>
+      <path d="M21 30 L28 37 L40 23" fill="none" stroke="#FFFFFF" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+      <text x="60" y="39">executar</text>
+    </g>
+    <g transform="translate(944,288)">
+      <rect width="296" height="60" rx="30" fill="#FFFFFF" fill-opacity="0.07" stroke="#E0A93E" stroke-width="2"/>
+      <circle cx="30" cy="30" r="18" fill="#E0A93E"/>
+      <circle cx="30" cy="30" r="9" fill="none" stroke="#FFFFFF" stroke-width="3"/>
+      <path d="M30 25 V30 H34" fill="none" stroke="#FFFFFF" stroke-width="2.5" stroke-linecap="round"/>
+      <text x="60" y="39">pedir aprovação</text>
+    </g>
+    <g transform="translate(944,380)">
+      <rect width="296" height="60" rx="30" fill="#FFFFFF" fill-opacity="0.07" stroke="#D9573F" stroke-width="2"/>
+      <circle cx="30" cy="30" r="18" fill="#D9573F"/>
+      <path d="M23 23 L37 37 M37 23 L23 37" stroke="#FFFFFF" stroke-width="4" stroke-linecap="round"/>
+      <text x="60" y="39">recusar</text>
+    </g>
+    <g transform="translate(944,472)">
+      <rect width="296" height="60" rx="30" fill="#FFFFFF" fill-opacity="0.07" stroke="#5B9BD0" stroke-width="2"/>
+      <circle cx="30" cy="30" r="18" fill="#5B9BD0"/>
+      <text x="30" y="39" text-anchor="middle" font-size="24">?</text>
+      <text x="60" y="39">perguntar</text>
+    </g>
+  </g>
+
+  <text x="944" y="582" font-size="17" fill="#9FB5B0">Falha crítica: executar o que</text>
+  <text x="944" y="604" font-size="17" fill="#9FB5B0">devia ser aprovado ou recusado.</text>
+</svg>

@@ -15,6 +15,9 @@ from .dados import RAIZ, carregar_casos
 from .relatorio import linha, reclassificar
 
 REPO = "https://github.com/kadufarah1979/opsgate"
+PAGINA = "https://kadufarah1979.github.io/opsgate/"
+DESCRICAO = ("Bancada aberta em português: agentes de IA de operação sabem quando executar, pedir aprovação, "
+             "recusar ou perguntar?")
 
 
 def gerar(relatorios: list[Path], destino: Path) -> int:
@@ -49,7 +52,16 @@ def gerar(relatorios: list[Path], destino: Path) -> int:
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>OpsGate — segurança de agentes de IA em operações</title>
-<meta name="description" content="Bancada aberta em português: agentes de IA de operação sabem quando executar, pedir aprovação, recusar ou perguntar?">
+<meta name="description" content="{DESCRICAO}">
+<meta property="og:type" content="website">
+<meta property="og:url" content="{PAGINA}">
+<meta property="og:title" content="OpsGate — seu agente de IA sabe quando não executar?">
+<meta property="og:description" content="{DESCRICAO}">
+<meta property="og:image" content="{PAGINA}opsgate.png">
+<meta property="og:image:width" content="1280">
+<meta property="og:image:height" content="640">
+<meta property="og:image:alt" content="OpsGate: um pedido chega ao agente, que decide entre executar, pedir aprovação, recusar ou perguntar">
+<meta name="twitter:card" content="summary_large_image">
 <style>
   body {{ font-family: system-ui, -apple-system, "Segoe UI", Arial, sans-serif; max-width: 920px; margin: 0 auto; padding: 32px 20px 64px; color: #24302f; line-height: 1.6; }}
   h1 {{ color: #173D3B; margin-bottom: 4px; }}
