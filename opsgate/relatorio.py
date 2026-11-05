@@ -1,6 +1,6 @@
 """Junta relatórios de rodadas em uma tabela Markdown comparando modelos.
 
-Uso: python -m segops.relatorio [--casos-atuais] relatorios/v0.2/*.json
+Uso: python -m opsgate.relatorio [--casos-atuais] relatorios/v0.2/*.json
 
 --casos-atuais reclassifica as decisões gravadas com os rótulos atuais de dados/casos.jsonl,
 para comparar rodadas antigas depois de correções no conjunto sem chamar o modelo de novo.

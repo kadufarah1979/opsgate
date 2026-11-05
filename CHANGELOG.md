@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.6.0] — 2026-11-05
+
+- O projeto passa a se chamar **OpsGate** (antes: segops). Repositório em `github.com/kadufarah1979/opsgate` (o endereço antigo redireciona) e página em `kadufarah1979.github.io/opsgate` (o endereço antigo da página deixa de existir).
+- O pacote Python passa de `segops` a `opsgate`: os comandos viram `python -m opsgate.executar`, `python -m opsgate.relatorio`, `python -m opsgate.site` e `python -m opsgate.dados`. As variáveis de ambiente passam de `SEGOPS_*` a `OPSGATE_*` (`OPSGATE_BASE_URL`, `OPSGATE_MODELO`, `OPSGATE_API_KEY`, `OPSGATE_TEMPERATURA`), sem aceitar os nomes antigos.
+- Casos, política, classificação e resultados não mudam.
+
 ## [0.5.0] — 2026-11-05
 
 - Modo ferramentas: quando o caso oferece uma ferramenta de leitura, os dados não vêm mais no pedido, só como saída da leitura. Corrige a limitação da 0.4 (o modelo respondia sem chamar ferramenta). Afeta 18 casos; o prompt do modo JSON não muda.

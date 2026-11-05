@@ -17,6 +17,6 @@ jobs:
           python-version: ${{ matrix.python }}
       - run: pip install pytest
       - name: Valida o conjunto de casos
-        run: python -m segops.dados
+        run: python -m opsgate.dados
       - name: Testes
         run: python -m pytest -q

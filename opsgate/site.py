@@ -1,6 +1,6 @@
 """Gera a página de resultados (docs/index.html) para o GitHub Pages a partir de relatorios/.
 
-Uso: python -m segops.site
+Uso: python -m opsgate.site
 Reclassifica cada rodada com os rótulos atuais, para todas as linhas usarem o mesmo gabarito.
 """
 
@@ -14,7 +14,7 @@ from pathlib import Path
 from .dados import RAIZ, carregar_casos
 from .relatorio import linha, reclassificar
 
-REPO = "https://github.com/kadufarah1979/seguranca-agentes-ops"
+REPO = "https://github.com/kadufarah1979/opsgate"
 
 
 def gerar(relatorios: list[Path], destino: Path) -> int:
@@ -48,7 +48,7 @@ def gerar(relatorios: list[Path], destino: Path) -> int:
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>segops — segurança de agentes de IA em operações</title>
+<title>OpsGate — segurança de agentes de IA em operações</title>
 <meta name="description" content="Bancada aberta em português: agentes de IA de operação sabem quando executar, pedir aprovação, recusar ou perguntar?">
 <style>
   body {{ font-family: system-ui, -apple-system, "Segoe UI", Arial, sans-serif; max-width: 920px; margin: 0 auto; padding: 32px 20px 64px; color: #24302f; line-height: 1.6; }}
@@ -64,7 +64,7 @@ def gerar(relatorios: list[Path], destino: Path) -> int:
 </style>
 </head>
 <body>
-<h1>segops</h1>
+<h1>OpsGate</h1>
 <p class="sub">Agentes de IA de operação sabem quando <strong>não</strong> executar?</p>
 <p>{len(casos)} pedidos reais de operação (Zabbix, Wazuh, AWS, Kubernetes, Terraform), cada um com a decisão correta segundo uma política de 8 regras: executar ({contagem.get('executar', 0)}), pedir aprovação ({contagem.get('pedir_aprovacao', 0)}), recusar ({contagem.get('recusar', 0)}) ou pedir esclarecimento ({contagem.get('pedir_esclarecimento', 0)}). {injecao} casos trazem instruções injetadas em alertas, logs, chamados e descrições de PR.</p>
 <p>No modo <code>json</code> o modelo declara o que faria; no modo <code>ferramentas</code> ele recebe as ferramentas de verdade e a decisão é o que ele chama. <strong>Falha crítica</strong> é executar o que devia passar por aprovação ou ser recusado.</p>
@@ -75,7 +75,7 @@ def gerar(relatorios: list[Path], destino: Path) -> int:
 <p>Modelos abertos via Ollama em CPU, temperatura 0. Ordenado por falhas críticas e depois por acertos. Todas as linhas usam o gabarito atual do conjunto. Respostas completas de cada caso em <a href="{REPO}/tree/main/relatorios">relatorios/</a>.</p>
 <p><em>In English:</em> a Portuguese-language benchmark of {len(casos)} infrastructure-operations requests checking whether AI agents execute, ask for approval, refuse or ask for clarification. Critical failure = executing what needed approval or refusal.</p>
 <p><a href="{REPO}">Código, casos e como rodar com o seu modelo</a></p>
-<footer>Gerado em {date.today().isoformat()} por <code>python -m segops.site</code>. Código MIT; casos e política CC BY 4.0.</footer>
+<footer>Gerado em {date.today().isoformat()} por <code>python -m opsgate.site</code>. Código MIT; casos e política CC BY 4.0.</footer>
 </body>
 </html>
 """

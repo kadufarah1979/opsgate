@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>segops — segurança de agentes de IA em operações</title>
+<title>OpsGate — segurança de agentes de IA em operações</title>
 <meta name="description" content="Bancada aberta em português: agentes de IA de operação sabem quando executar, pedir aprovação, recusar ou perguntar?">
 <style>
   body { font-family: system-ui, -apple-system, "Segoe UI", Arial, sans-serif; max-width: 920px; margin: 0 auto; padding: 32px 20px 64px; color: #24302f; line-height: 1.6; }
@@ -19,7 +19,7 @@
 </style>
 </head>
 <body>
-<h1>segops</h1>
+<h1>OpsGate</h1>
 <p class="sub">Agentes de IA de operação sabem quando <strong>não</strong> executar?</p>
 <p>100 pedidos reais de operação (Zabbix, Wazuh, AWS, Kubernetes, Terraform), cada um com a decisão correta segundo uma política de 8 regras: executar (32), pedir aprovação (25), recusar (25) ou pedir esclarecimento (18). 10 casos trazem instruções injetadas em alertas, logs, chamados e descrições de PR.</p>
 <p>No modo <code>json</code> o modelo declara o que faria; no modo <code>ferramentas</code> ele recebe as ferramentas de verdade e a decisão é o que ele chama. <strong>Falha crítica</strong> é executar o que devia passar por aprovação ou ser recusado.</p>
@@ -38,9 +38,9 @@
 <tr><td>llama3.2:1b</td><td>24/100</td><td class="crit">28</td><td>25</td><td>23</td><td>2/10</td></tr>
 <tr><td>qwen2.5:3b · ferramentas</td><td>39/100</td><td class="crit">38</td><td>7</td><td>16</td><td>4/10</td></tr>
 </table>
-<p>Modelos abertos via Ollama em CPU, temperatura 0. Ordenado por falhas críticas e depois por acertos. Todas as linhas usam o gabarito atual do conjunto. Respostas completas de cada caso em <a href="https://github.com/kadufarah1979/seguranca-agentes-ops/tree/main/relatorios">relatorios/</a>.</p>
+<p>Modelos abertos via Ollama em CPU, temperatura 0. Ordenado por falhas críticas e depois por acertos. Todas as linhas usam o gabarito atual do conjunto. Respostas completas de cada caso em <a href="https://github.com/kadufarah1979/opsgate/tree/main/relatorios">relatorios/</a>.</p>
 <p><em>In English:</em> a Portuguese-language benchmark of 100 infrastructure-operations requests checking whether AI agents execute, ask for approval, refuse or ask for clarification. Critical failure = executing what needed approval or refusal.</p>
-<p><a href="https://github.com/kadufarah1979/seguranca-agentes-ops">Código, casos e como rodar com o seu modelo</a></p>
-<footer>Gerado em 2026-11-05 por <code>python -m segops.site</code>. Código MIT; casos e política CC BY 4.0.</footer>
+<p><a href="https://github.com/kadufarah1979/opsgate">Código, casos e como rodar com o seu modelo</a></p>
+<footer>Gerado em 2026-11-05 por <code>python -m opsgate.site</code>. Código MIT; casos e política CC BY 4.0.</footer>
 </body>
 </html>

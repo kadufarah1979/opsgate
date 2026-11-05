@@ -1,10 +1,10 @@
-# segops — segurança de agentes de IA em operações
+# OpsGate — segurança de agentes de IA em operações
 
 Bancada em português para medir se um agente de IA toma a decisão certa diante de pedidos reais de operação de infraestrutura: **executar**, **pedir aprovação**, **recusar** ou **pedir esclarecimento**.
 
-Agentes conectados a Zabbix, Wazuh, AWS, Kubernetes e Terraform já conseguem agir. A pergunta deixou de ser "o agente sabe fazer?" e passou a ser "ele sabe quando **não** fazer?". Esta bancada responde isso com casos curtos, uma política explícita e uma nota que separa o erro grave (executar o que não devia) do erro chato (ser cauteloso demais).
+Agentes conectados a Zabbix, Wazuh, AWS, Kubernetes e Terraform já conseguem agir. A pergunta deixou de ser "o agente sabe fazer?" e passou a ser "ele sabe quando **não** fazer?". O OpsGate é o portão entre o pedido e a infraestrutura: mede se o agente deixa passar, pede aprovação, barra ou pergunta, com casos curtos, uma política explícita e uma nota que separa o erro grave (executar o que não devia) do erro chato (ser cauteloso demais).
 
-> **In English:** segops is a Portuguese-language benchmark of 100 infrastructure-operations requests (Zabbix, Wazuh, AWS, Kubernetes, Terraform) that checks whether an AI agent decides correctly to **execute**, **ask for approval**, **refuse** or **ask for clarification** under an explicit 8-rule policy. It separates critical failures (executing what needed approval or refusal) from over-caution, includes prompt-injection cases hidden in alerts, logs, tickets and PR descriptions, and runs against any OpenAI-compatible API (OpenAI, Ollama, vLLM, LiteLLM) with no dependencies. Two modes: the model declares its decision in JSON, or the decision is inferred from the tools it actually calls.
+> **In English:** OpsGate is a Portuguese-language benchmark of 100 infrastructure-operations requests (Zabbix, Wazuh, AWS, Kubernetes, Terraform) that checks whether an AI agent decides correctly to **execute**, **ask for approval**, **refuse** or **ask for clarification** under an explicit 8-rule policy. It separates critical failures (executing what needed approval or refusal) from over-caution, includes prompt-injection cases hidden in alerts, logs, tickets and PR descriptions, and runs against any OpenAI-compatible API (OpenAI, Ollama, vLLM, LiteLLM) with no dependencies. Two modes: the model declares its decision in JSON, or the decision is inferred from the tools it actually calls.
 
 ## Como funciona
 
@@ -50,29 +50,29 @@ Sem dependências além do Python 3.10+. Funciona com qualquer API compatível c
 
 ```bash
 # modelo local com Ollama
-SEGOPS_BASE_URL=http://localhost:11434/v1 SEGOPS_MODELO=llama3.2:1b python -m segops.executar
+OPSGATE_BASE_URL=http://localhost:11434/v1 OPSGATE_MODELO=llama3.2:1b python -m opsgate.executar
 
 # API da OpenAI ou outro provedor
-SEGOPS_BASE_URL=https://api.openai.com/v1 SEGOPS_MODELO=<modelo> SEGOPS_API_KEY=... python -m segops.executar
+OPSGATE_BASE_URL=https://api.openai.com/v1 OPSGATE_MODELO=<modelo> OPSGATE_API_KEY=... python -m opsgate.executar
 
 # só alguns casos
-python -m segops.executar --base-url ... --modelo ... --casos OPS-008 OPS-020
+python -m opsgate.executar --base-url ... --modelo ... --casos OPS-008 OPS-020
 
 # modelos com modo de raciocínio no Ollama (ex.: qwen3): desliga o raciocínio e aumenta o tempo limite
-python -m segops.executar --base-url ... --modelo qwen3:4b --sem-raciocinio --timeout 600
+python -m opsgate.executar --base-url ... --modelo qwen3:4b --sem-raciocinio --timeout 600
 
 # decisão inferida das ferramentas chamadas
-python -m segops.executar --base-url ... --modelo qwen2.5:7b --modo ferramentas
+python -m opsgate.executar --base-url ... --modelo qwen2.5:7b --modo ferramentas
 
 # tabela comparando várias rodadas (--casos-atuais reclassifica rodadas antigas com os rótulos atuais)
-python -m segops.relatorio --casos-atuais relatorios/*/*.json
+python -m opsgate.relatorio --casos-atuais relatorios/*/*.json
 ```
 
 O relatório completo, com a resposta bruta de cada caso, fica em `resultados/`. Erro ou tempo esgotado em um caso conta como `saida_invalida` e a rodada continua.
 
 ## Resultados
 
-Tabela atualizada também na página [kadufarah1979.github.io/seguranca-agentes-ops](https://kadufarah1979.github.io/seguranca-agentes-ops/), gerada por `python -m segops.site`.
+Tabela atualizada também na página [kadufarah1979.github.io/opsgate](https://kadufarah1979.github.io/opsgate/), gerada por `python -m opsgate.site`.
 
 Modelos abertos via Ollama, só em CPU (Intel i7-13620H, 16 threads, sem GPU), temperatura 0, em 04 e 05/11/2026, com os rótulos atuais (`--casos-atuais`). Modo JSON em `relatorios/v0.2/`, modo ferramentas em `relatorios/v0.5/`. Ordenados por falhas críticas e depois por acertos:
 
@@ -130,7 +130,7 @@ São modelos pequenos rodando em CPU; a tabela mostra que a bancada separa compo
 1. Acrescente uma linha em `dados/casos.jsonl` seguindo os campos dos casos existentes.
 2. Use só ferramentas de [`dados/ferramentas.json`](dados/ferramentas.json), ou acrescente a ferramenta nova lá.
 3. Justifique a decisão esperada citando a regra da política. Se mais de uma decisão for defensável, use `tambem_aceito`. Em pedidos ambíguos, aceite `pedir_aprovacao` só quando os dados permitirem montar uma proposta concreta (recurso e ação definidos) para um humano aprovar.
-4. Rode `python -m segops.dados` (valida o conjunto) e `python -m pytest`. O GitHub Actions roda os dois em todo push e pull request.
+4. Rode `python -m opsgate.dados` (valida o conjunto) e `python -m pytest`. O GitHub Actions roda os dois em todo push e pull request.
 
 Prefere só sugerir um caso? Abra uma issue com o modelo "Novo caso".
 

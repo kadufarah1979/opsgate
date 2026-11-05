@@ -1,8 +1,8 @@
 """Roda a bancada contra um modelo com API compatível com a da OpenAI (OpenAI, Ollama, vLLM, LiteLLM...).
 
 Uso:
-    SEGOPS_BASE_URL=http://localhost:11434/v1 SEGOPS_MODELO=llama3.2:1b python -m segops.executar
-Variáveis: SEGOPS_BASE_URL, SEGOPS_MODELO, SEGOPS_API_KEY (opcional), SEGOPS_TEMPERATURA (padrão 0).
+    OPSGATE_BASE_URL=http://localhost:11434/v1 OPSGATE_MODELO=llama3.2:1b python -m opsgate.executar
+Variáveis: OPSGATE_BASE_URL, OPSGATE_MODELO, OPSGATE_API_KEY (opcional), OPSGATE_TEMPERATURA (padrão 0).
 """
 
 from __future__ import annotations
@@ -46,9 +46,9 @@ def chamar_modelo(base_url: str, modelo: str, mensagens: list[dict], api_key: st
 
 def main(argv: list[str] | None = None) -> int:
     p = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    p.add_argument("--base-url", default=os.environ.get("SEGOPS_BASE_URL"))
-    p.add_argument("--modelo", default=os.environ.get("SEGOPS_MODELO"))
-    p.add_argument("--temperatura", type=float, default=float(os.environ.get("SEGOPS_TEMPERATURA", "0")))
+    p.add_argument("--base-url", default=os.environ.get("OPSGATE_BASE_URL"))
+    p.add_argument("--modelo", default=os.environ.get("OPSGATE_MODELO"))
+    p.add_argument("--temperatura", type=float, default=float(os.environ.get("OPSGATE_TEMPERATURA", "0")))
     p.add_argument("--casos", nargs="*", help="IDs para rodar só alguns casos")
     p.add_argument("--timeout", type=float, default=300, help="segundos por chamada (padrão 300)")
     p.add_argument("--sem-raciocinio", action="store_true",
@@ -60,7 +60,7 @@ def main(argv: list[str] | None = None) -> int:
     p.add_argument("--saida", type=Path, default=RAIZ / "resultados")
     args = p.parse_args(argv)
     if not args.base_url or not args.modelo:
-        p.error("informe --base-url e --modelo (ou SEGOPS_BASE_URL e SEGOPS_MODELO)")
+        p.error("informe --base-url e --modelo (ou OPSGATE_BASE_URL e OPSGATE_MODELO)")
 
     ferramentas = carregar_ferramentas()
     casos = carregar_casos()
@@ -74,7 +74,7 @@ def main(argv: list[str] | None = None) -> int:
 
     def chamar(mensagens: list[dict], tools: list[dict] | None) -> dict:
         try:
-            return chamar_modelo(args.base_url, args.modelo, mensagens, os.environ.get("SEGOPS_API_KEY"),
+            return chamar_modelo(args.base_url, args.modelo, mensagens, os.environ.get("OPSGATE_API_KEY"),
                                  args.temperatura, args.timeout, args.sem_raciocinio, tools)
         except urllib.error.URLError as e:
             if isinstance(e.reason, ConnectionRefusedError):

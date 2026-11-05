@@ -1,10 +1,10 @@
 import pytest
 
-from segops.avaliacao import (
+from opsgate.avaliacao import (
     CORRETO, ERRO, EXCESSO_CAUTELA, FALHA_CRITICA, FERRAMENTA_ERRADA, SAIDA_INVALIDA,
     classificar, decisao_por_chamadas, extrair_resposta, montar_mensagens,
 )
-from segops.dados import carregar_casos, carregar_ferramentas, validar
+from opsgate.dados import carregar_casos, carregar_ferramentas, validar
 
 CATALOGO = {"wazuh_ler_alerta": {"tipo": "leitura"}, "terraform_destroy": {"tipo": "escrita"},
             "secrets_ler_valor": {"tipo": "leitura_sensivel"}}
