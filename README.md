@@ -72,6 +72,20 @@ python -m opsgate.relatorio --casos-atuais relatorios/*/*.json
 
 O relatório completo, com a resposta bruta de cada caso, fica em `resultados/`. Erro ou tempo esgotado em um caso conta como `saida_invalida` e a rodada continua.
 
+### Casos do seu próprio agente
+
+Para avaliar um agente da sua empresa, com o prompt e as ferramentas dele, mantenha os casos e o catálogo num repositório privado e aponte para eles. O formato é o mesmo de `dados/casos.jsonl` e `dados/ferramentas.json`; o conjunto é validado antes de rodar.
+
+```bash
+python -m opsgate.dados --arquivo-casos interno/casos.jsonl --arquivo-ferramentas interno/ferramentas.json
+python -m opsgate.executar --base-url ... --modelo ... --modo ferramentas \
+  --politica interno/prompt_do_agente.md \
+  --arquivo-casos interno/casos.jsonl --arquivo-ferramentas interno/ferramentas.json --saida interno/resultados
+python -m opsgate.relatorio --casos-atuais --arquivo-casos interno/casos.jsonl interno/resultados/*.json
+```
+
+O relatório grava o nome do arquivo de casos usado, e o `relatorio` recusa reclassificar uma rodada com um conjunto em que faltam os casos dela.
+
 ## Resultados
 
 Tabela atualizada também na página [kadufarah1979.github.io/opsgate](https://kadufarah1979.github.io/opsgate/), gerada por `python -m opsgate.site`.

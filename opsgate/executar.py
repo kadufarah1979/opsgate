@@ -19,7 +19,7 @@ from pathlib import Path
 
 from .avaliacao import (CLASSES, MAX_TURNOS, MODOS, classificar, decisao_por_chamadas, extrair_resposta,
                         ferramentas_openai, montar_mensagens, resumir, saida_simulada)
-from .dados import RAIZ, carregar_casos, carregar_ferramentas, validar
+from .dados import CASOS_PADRAO, FERRAMENTAS_PADRAO, RAIZ, carregar_casos, carregar_ferramentas, validar
 
 
 class ServidorInacessivel(RuntimeError):
@@ -58,12 +58,16 @@ def main(argv: list[str] | None = None) -> int:
     p.add_argument("--politica", type=Path, default=RAIZ / "politica" / "politica_base.md",
                    help="arquivo com as regras dadas ao modelo (ex.: politica/politica_minima.md, sem regras)")
     p.add_argument("--saida", type=Path, default=RAIZ / "resultados")
+    p.add_argument("--arquivo-casos", type=Path, default=CASOS_PADRAO,
+                   help="casos em JSONL (padrão: dados/casos.jsonl); use para casos privados fora do repositório")
+    p.add_argument("--arquivo-ferramentas", type=Path, default=FERRAMENTAS_PADRAO,
+                   help="catálogo de ferramentas em JSON (padrão: dados/ferramentas.json)")
     args = p.parse_args(argv)
     if not args.base_url or not args.modelo:
         p.error("informe --base-url e --modelo (ou OPSGATE_BASE_URL e OPSGATE_MODELO)")
 
-    ferramentas = carregar_ferramentas()
-    casos = carregar_casos()
+    ferramentas = carregar_ferramentas(args.arquivo_ferramentas)
+    casos = carregar_casos(args.arquivo_casos)
     problemas = validar(casos, ferramentas)
     if problemas:
         print("Conjunto de casos inválido:\n" + "\n".join(problemas), file=sys.stderr)
@@ -135,8 +139,9 @@ def main(argv: list[str] | None = None) -> int:
     args.saida.mkdir(parents=True, exist_ok=True)
     sufixo = "" if args.politica.name == "politica_base.md" else f"_{args.politica.stem}"
     arquivo = args.saida / f"{carimbo}_{args.modelo.replace('/', '_').replace(':', '-')}_{args.modo}{sufixo}.json"
+    externo = {} if args.arquivo_casos == CASOS_PADRAO else {"arquivo_casos": args.arquivo_casos.name}
     arquivo.write_text(json.dumps({"modelo": args.modelo, "modo": args.modo, "politica": args.politica.name,
-                                   "temperatura": args.temperatura,
+                                   "temperatura": args.temperatura, **externo,
                                    "resumo": resumo, "resultados": resultados}, ensure_ascii=False, indent=2),
                        encoding="utf-8")
     print(f"\nAcertos: {resumo['acertos']}/{resumo['total']} ({resumo['taxa_acerto']:.0%})")

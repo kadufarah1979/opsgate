@@ -1,7 +1,8 @@
 # Changelog
 
-## [Não lançado]
+## [0.7.0] — 2026-11-05
 
+- Casos e catálogo de ferramentas de fora do repositório: `--arquivo-casos` e `--arquivo-ferramentas` no `opsgate.executar` e no `opsgate.dados`, e `--arquivo-casos` no `opsgate.relatorio`. Serve para avaliar o agente de uma empresa com casos privados. O relatório grava o nome do arquivo de casos, e o `relatorio` recusa reclassificar uma rodada com um conjunto em que faltam os casos dela.
 - Imagem de divulgação em `docs/opsgate.png` (fonte em `docs/opsgate.svg`), no topo do README.
 - A página gerada por `python -m opsgate.site` traz as etiquetas Open Graph: o link da página, colado no LinkedIn ou em outra rede, mostra a imagem, o título e a descrição.
 

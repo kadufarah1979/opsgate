@@ -1,9 +1,10 @@
 """Junta relatórios de rodadas em uma tabela Markdown comparando modelos.
 
-Uso: python -m opsgate.relatorio [--casos-atuais] relatorios/v0.2/*.json
+Uso: python -m opsgate.relatorio [--casos-atuais] [--arquivo-casos casos.jsonl] relatorios/v0.2/*.json
 
 --casos-atuais reclassifica as decisões gravadas com os rótulos atuais de dados/casos.jsonl,
-para comparar rodadas antigas depois de correções no conjunto sem chamar o modelo de novo.
+para comparar rodadas antigas depois de correções no conjunto sem chamar o modelo de novo. Rodadas feitas com
+casos de fora do repositório (--arquivo-casos no executor) pedem o mesmo arquivo aqui.
 """
 
 from __future__ import annotations
@@ -16,8 +17,14 @@ from .avaliacao import classificar, resumir
 from .dados import carregar_casos
 
 
-def reclassificar(dados: dict) -> dict:
-    casos = {c["id"]: c for c in carregar_casos()}
+def reclassificar(dados: dict, casos: list[dict] | None = None) -> dict:
+    por_id = {c["id"]: c for c in (casos if casos is not None else carregar_casos())}
+    faltando = sorted({r["id"] for r in dados["resultados"]} - por_id.keys())
+    if faltando:
+        origem = dados.get("arquivo_casos", "dados/casos.jsonl")
+        raise ValueError(f"rodada de {dados['modelo']} usou casos de {origem}; ids ausentes no conjunto informado: "
+                         f"{', '.join(faltando[:5])}{'...' if len(faltando) > 5 else ''}")
+    casos = por_id
     resultados = []
     for r in dados["resultados"]:
         resposta = ({"decisao": r["decisao"], "ferramenta": r["ferramenta"], "efeito": r.get("efeito")}
@@ -46,10 +53,11 @@ def linha(dados: dict) -> dict:
     }
 
 
-def tabela(arquivos: list[Path], casos_atuais: bool = False) -> str:
+def tabela(arquivos: list[Path], casos_atuais: bool = False, arquivo_casos: Path | None = None) -> str:
     rodadas = [json.loads(a.read_text(encoding="utf-8")) for a in arquivos]
     if casos_atuais:
-        rodadas = [reclassificar(d) for d in rodadas]
+        casos = carregar_casos(arquivo_casos) if arquivo_casos else None
+        rodadas = [reclassificar(d, casos) for d in rodadas]
     linhas = sorted((linha(d) for d in rodadas), key=lambda l: (l["falha_critica"], -l["acertos"]))
     out = ["| Modelo | Acertos | Falhas críticas | Excesso de cautela | Outros erros | Injeção correta | s/caso |",
            "|---|---|---|---|---|---|---|"]
@@ -63,6 +71,10 @@ def tabela(arquivos: list[Path], casos_atuais: bool = False) -> str:
 if __name__ == "__main__":
     p = argparse.ArgumentParser()
     p.add_argument("--casos-atuais", action="store_true")
+    p.add_argument("--arquivo-casos", type=Path, help="casos em JSONL usados nas rodadas (padrão: dados/casos.jsonl)")
     p.add_argument("arquivos", nargs="+", type=Path)
     a = p.parse_args()
-    print(tabela(a.arquivos, a.casos_atuais))
+    try:
+        print(tabela(a.arquivos, a.casos_atuais, a.arquivo_casos))
+    except ValueError as e:
+        p.error(str(e))

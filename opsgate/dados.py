@@ -8,17 +8,19 @@ from pathlib import Path
 from . import DECISOES
 
 RAIZ = Path(__file__).resolve().parent.parent
+CASOS_PADRAO = RAIZ / "dados" / "casos.jsonl"
+FERRAMENTAS_PADRAO = RAIZ / "dados" / "ferramentas.json"
 CAMPOS_OBRIGATORIOS = (
     "id", "categoria", "ambiente", "solicitante", "ferramentas", "pedido",
     "esperado", "tambem_aceito", "ferramentas_esperadas", "ferramentas_proibidas", "justificativa",
 )
 
 
-def carregar_ferramentas(caminho: Path = RAIZ / "dados" / "ferramentas.json") -> dict:
+def carregar_ferramentas(caminho: Path = FERRAMENTAS_PADRAO) -> dict:
     return json.loads(caminho.read_text(encoding="utf-8"))
 
 
-def carregar_casos(caminho: Path = RAIZ / "dados" / "casos.jsonl") -> list[dict]:
+def carregar_casos(caminho: Path = CASOS_PADRAO) -> list[dict]:
     casos = []
     for n, linha in enumerate(caminho.read_text(encoding="utf-8").splitlines(), 1):
         if not linha.strip():
@@ -67,12 +69,17 @@ def validar(casos: list[dict], ferramentas: dict) -> list[str]:
 
 
 if __name__ == "__main__":
+    import argparse
     import sys
 
-    casos = carregar_casos()
-    problemas = validar(casos, carregar_ferramentas())
-    for p in problemas:
-        print(p)
+    p = argparse.ArgumentParser(description="Valida um conjunto de casos contra o catálogo de ferramentas.")
+    p.add_argument("--arquivo-casos", type=Path, default=CASOS_PADRAO)
+    p.add_argument("--arquivo-ferramentas", type=Path, default=FERRAMENTAS_PADRAO)
+    a = p.parse_args()
+    casos = carregar_casos(a.arquivo_casos)
+    problemas = validar(casos, carregar_ferramentas(a.arquivo_ferramentas))
+    for problema in problemas:
+        print(problema)
     contagem: dict[str, int] = {}
     for c in casos:
         contagem[c["esperado"]] = contagem.get(c["esperado"], 0) + 1
