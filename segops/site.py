@@ -18,7 +18,15 @@ REPO = "https://github.com/kadufarah1979/seguranca-agentes-ops"
 
 
 def gerar(relatorios: list[Path], destino: Path) -> int:
-    linhas = sorted((linha(reclassificar(json.loads(a.read_text(encoding="utf-8")))) for a in relatorios),
+    # Uma linha por (modelo, modo, política): vale a rodada mais recente (o nome do arquivo começa
+    # com o carimbo de tempo UTC), para versões antigas não duplicarem o mesmo modelo.
+    recentes: dict[tuple, tuple[str, dict]] = {}
+    for a in relatorios:
+        dados = json.loads(a.read_text(encoding="utf-8"))
+        chave = (dados["modelo"], dados.get("modo", "json"), dados.get("politica", "politica_base.md"))
+        if chave not in recentes or a.name > recentes[chave][0]:
+            recentes[chave] = (a.name, dados)
+    linhas = sorted((linha(reclassificar(d)) for _, d in recentes.values()),
                     key=lambda l: (l["falha_critica"], -l["acertos"]))
     casos = carregar_casos()
     contagem: dict[str, int] = {}
