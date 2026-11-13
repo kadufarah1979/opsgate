@@ -62,9 +62,17 @@ def main(argv: list[str] | None = None) -> int:
                    help="casos em JSONL (padrão: dados/casos.jsonl); use para casos privados fora do repositório")
     p.add_argument("--arquivo-ferramentas", type=Path, default=FERRAMENTAS_PADRAO,
                    help="catálogo de ferramentas em JSON (padrão: dados/ferramentas.json)")
+    p.add_argument("--catalogo-proprio", action="store_true",
+                   help="modo ferramentas com o catálogo do próprio agente: sem as ferramentas de controle da bancada, "
+                        "sem a instrução de formato e sem a lista de ferramentas no pedido; a decisão vem das "
+                        "ferramentas marcadas com 'decisao' no catálogo e do texto")
+    p.add_argument("--max-turnos", type=int, default=MAX_TURNOS,
+                   help=f"rodadas de leitura antes de decidir, no modo ferramentas (padrão {MAX_TURNOS})")
     args = p.parse_args(argv)
     if not args.base_url or not args.modelo:
         p.error("informe --base-url e --modelo (ou OPSGATE_BASE_URL e OPSGATE_MODELO)")
+    if args.catalogo_proprio and args.modo != "ferramentas":
+        p.error("--catalogo-proprio só vale com --modo ferramentas")
 
     ferramentas = carregar_ferramentas(args.arquivo_ferramentas)
     casos = carregar_casos(args.arquivo_casos)
@@ -93,15 +101,15 @@ def main(argv: list[str] | None = None) -> int:
             return {"content": f"<resposta malformada: {type(e).__name__}: {e}>"}
 
     def rodar_caso(caso: dict, args, politica: str, ferramentas: dict) -> tuple[dict | None, str]:
-        mensagens = montar_mensagens(caso, politica, ferramentas, args.modo)
+        mensagens = montar_mensagens(caso, politica, ferramentas, args.modo, args.catalogo_proprio)
         if args.modo == "json":
             bruta = chamar(mensagens, None).get("content") or ""
             return extrair_resposta(bruta), bruta
         # Modo ferramentas: leituras recebem uma saída simulada e o modelo continua, até chamar algo com efeito,
         # uma ferramenta de controle, parar de chamar ferramentas ou esgotar os turnos.
-        tools = ferramentas_openai(caso, ferramentas)
+        tools = ferramentas_openai(caso, ferramentas, args.catalogo_proprio)
         historico = []
-        for _ in range(MAX_TURNOS):
+        for _ in range(args.max_turnos):
             msg = chamar(mensagens, tools)
             tool_calls = msg.get("tool_calls") or []
             historico.append({"content": msg.get("content"), "tool_calls": tool_calls})
@@ -142,6 +150,8 @@ def main(argv: list[str] | None = None) -> int:
         externo["arquivo_ferramentas"] = args.arquivo_ferramentas.name
     arquivo.write_text(json.dumps({"modelo": args.modelo, "modo": args.modo, "politica": args.politica.name,
                                    "temperatura": args.temperatura, **externo,
+                                   **({"catalogo_proprio": True, "max_turnos": args.max_turnos}
+                                      if args.catalogo_proprio else {}),
                                    "resumo": resumo, "resultados": resultados}, ensure_ascii=False, indent=2),
                        encoding="utf-8")
     print(f"\nAcertos: {resumo['acertos']}/{resumo['total']} ({resumo['taxa_acerto']:.0%})")

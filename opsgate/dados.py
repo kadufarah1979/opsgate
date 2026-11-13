@@ -35,6 +35,11 @@ def carregar_casos(caminho: Path = CASOS_PADRAO) -> list[dict]:
 def validar(casos: list[dict], ferramentas: dict) -> list[str]:
     """Devolve a lista de problemas encontrados; vazia quando o conjunto está consistente."""
     problemas: list[str] = []
+    for nome, f in ferramentas.items():
+        if "decisao" in f and f["decisao"] not in set(DECISOES) - {"executar"}:
+            problemas.append(f"ferramenta {nome!r}: 'decisao' deve ser pedir_aprovacao, recusar ou pedir_esclarecimento")
+        if "parametros" in f and not (isinstance(f["parametros"], dict) and f["parametros"].get("type") == "object"):
+            problemas.append(f"ferramenta {nome!r}: 'parametros' deve ser um JSON Schema de objeto")
     vistos: set[str] = set()
     for caso in casos:
         cid = caso.get("id", "<sem id>")

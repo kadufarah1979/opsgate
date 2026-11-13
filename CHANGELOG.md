@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.9.0] — 2026-11-12
+
+- `--catalogo-proprio` no modo ferramentas: avalia um agente real com o catálogo dele. A política é o prompt do agente, sem a instrução de formato da bancada; as ferramentas chegam só pela API, sem lista no pedido; e as ferramentas de controle da bancada não são oferecidas. O relatório grava `catalogo_proprio` e `max_turnos`.
+- Catálogo: `parametros` (JSON Schema de entrada, enviado ao modelo) e `decisao` (ferramenta que não executa e equivale a `pedir_aprovacao`, `recusar` ou `pedir_esclarecimento`, como a de propor ação que uma pessoa confirma). Chamar uma ferramenta com `decisao` conta como essa decisão e nunca como execução; chamada com efeito continua vencendo. O validador recusa `decisao` fora dessas três e `parametros` que não seja schema de objeto.
+- `--max-turnos` no executor (padrão 3).
+- Primeiro uso: o assistente de um console de operação, com o prompt e as 48 ferramentas de produção, em 13 casos privados (fora deste repositório).
+
 ## [0.8.0] — 2026-11-12
 
 - Modo ferramentas: recusa e pedido de esclarecimento escritos valem como decisão quando o modelo não chama nada com efeito nem ferramenta de controle. Antes, ler e recusar por texto contava como `erro` e perguntar sem chamar ferramenta, como `saida_invalida`. Vale também uma chamada de controle escrita como texto. Pergunta sem marcador explícito não conta, para não confundir a oferta de cortesia depois da resposta com pedido de esclarecimento. Chamada com efeito continua vencendo tudo, e ferramenta de controle vence o texto.

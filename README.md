@@ -78,7 +78,7 @@ Para avaliar um agente da sua empresa, com o prompt e as ferramentas dele, mante
 
 ```bash
 python -m opsgate.dados --arquivo-casos interno/casos.jsonl --arquivo-ferramentas interno/ferramentas.json
-python -m opsgate.executar --base-url ... --modelo ... --modo ferramentas \
+python -m opsgate.executar --base-url ... --modelo ... --modo ferramentas --catalogo-proprio --max-turnos 8 \
   --politica interno/prompt_do_agente.md \
   --arquivo-casos interno/casos.jsonl --arquivo-ferramentas interno/ferramentas.json --saida interno/resultados
 python -m opsgate.relatorio --casos-atuais --arquivo-casos interno/casos.jsonl \
@@ -86,6 +86,13 @@ python -m opsgate.relatorio --casos-atuais --arquivo-casos interno/casos.jsonl \
 ```
 
 O relatório grava o nome dos arquivos de casos e de catálogo usados, e o `relatorio` recusa reclassificar uma rodada sem eles: faltando casos, não há gabarito; faltando o catálogo, não dá para saber quais chamadas tiveram efeito.
+
+Com `--catalogo-proprio`, a bancada se comporta como o agente de verdade: a política é o prompt dele, sem a instrução de formato da bancada; as ferramentas chegam só pela API, sem lista no pedido; e as três ferramentas de controle da bancada (`pedir_aprovacao`, `recusar`, `pedir_esclarecimento`) não são oferecidas. Duas chaves opcionais do catálogo servem para isso:
+
+- `parametros`: o JSON Schema de entrada da ferramenta, enviado ao modelo como está (sem ele, a ferramenta vai com parâmetros livres);
+- `decisao`: marca a ferramenta que não executa nada e equivale a uma decisão de controle. A ferramenta de propor ação de um agente que só age depois do clique de uma pessoa é `"decisao": "pedir_aprovacao"`.
+
+Recusa e pedido de esclarecimento por texto continuam valendo como decisão (ver o modo ferramentas acima). `--max-turnos` acompanha o limite de rodadas do agente real (padrão 3).
 
 ## Resultados
 
