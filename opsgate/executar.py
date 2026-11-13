@@ -17,7 +17,7 @@ import urllib.request
 from datetime import datetime, timezone
 from pathlib import Path
 
-from .avaliacao import (CLASSES, MAX_TURNOS, MODOS, classificar, decisao_por_chamadas, extrair_resposta,
+from .avaliacao import (CLASSES, MAX_TURNOS, MODOS, classificar, decisao_do_historico, extrair_resposta,
                         ferramentas_openai, montar_mensagens, resumir, saida_simulada)
 from .dados import CASOS_PADRAO, FERRAMENTAS_PADRAO, RAIZ, carregar_casos, carregar_ferramentas, validar
 
@@ -100,21 +100,19 @@ def main(argv: list[str] | None = None) -> int:
         # Modo ferramentas: leituras recebem uma saída simulada e o modelo continua, até chamar algo com efeito,
         # uma ferramenta de controle, parar de chamar ferramentas ou esgotar os turnos.
         tools = ferramentas_openai(caso, ferramentas)
-        chamadas: list[str] = []
         historico = []
         for _ in range(MAX_TURNOS):
             msg = chamar(mensagens, tools)
             tool_calls = msg.get("tool_calls") or []
             historico.append({"content": msg.get("content"), "tool_calls": tool_calls})
             nomes = [c["function"]["name"] for c in tool_calls]
-            chamadas += nomes
             so_leitura = nomes and all(ferramentas.get(n, {}).get("tipo") == "leitura" for n in nomes)
             if not so_leitura:
                 break
             mensagens = mensagens + [{"role": "assistant", "content": msg.get("content") or "", "tool_calls": tool_calls}]
             mensagens += [{"role": "tool", "tool_call_id": c.get("id", ""), "content": saida_simulada(caso, c["function"]["name"])}
                           for c in tool_calls]
-        return decisao_por_chamadas(chamadas, ferramentas), json.dumps(historico, ensure_ascii=False)
+        return decisao_do_historico(historico, ferramentas), json.dumps(historico, ensure_ascii=False)
 
     resultados = []
     for caso in casos:
@@ -129,7 +127,7 @@ def main(argv: list[str] | None = None) -> int:
         resultados.append({
             "id": caso["id"], "categoria": caso["categoria"], "esperado": caso["esperado"],
             "decisao": (resposta or {}).get("decisao"), "ferramenta": (resposta or {}).get("ferramenta"),
-            "efeito": (resposta or {}).get("efeito"),
+            "efeito": (resposta or {}).get("efeito"), "por_texto": bool((resposta or {}).get("por_texto")),
             "classe": classe, "segundos": round(time.monotonic() - inicio, 1), "resposta_bruta": bruta,
         })
         print(f"{caso['id']:<8} esperado={caso['esperado']:<21} obtido={str((resposta or {}).get('decisao')):<21} {classe}")
@@ -140,6 +138,8 @@ def main(argv: list[str] | None = None) -> int:
     sufixo = "" if args.politica.name == "politica_base.md" else f"_{args.politica.stem}"
     arquivo = args.saida / f"{carimbo}_{args.modelo.replace('/', '_').replace(':', '-')}_{args.modo}{sufixo}.json"
     externo = {} if args.arquivo_casos == CASOS_PADRAO else {"arquivo_casos": args.arquivo_casos.name}
+    if args.arquivo_ferramentas != FERRAMENTAS_PADRAO:
+        externo["arquivo_ferramentas"] = args.arquivo_ferramentas.name
     arquivo.write_text(json.dumps({"modelo": args.modelo, "modo": args.modo, "politica": args.politica.name,
                                    "temperatura": args.temperatura, **externo,
                                    "resumo": resumo, "resultados": resultados}, ensure_ascii=False, indent=2),

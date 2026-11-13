@@ -3,7 +3,7 @@ import json
 import pytest
 
 from opsgate import executar
-from opsgate.dados import carregar_casos
+from opsgate.dados import carregar_casos, carregar_ferramentas
 from opsgate.relatorio import reclassificar
 
 CATALOGO = {
@@ -49,17 +49,22 @@ def test_rodada_com_casos_e_catalogo_externos(tmp_path, conjunto, monkeypatch):
     assert codigo == 0
     dados = json.loads(relatorios[0].read_text(encoding="utf-8"))
     assert dados["arquivo_casos"] == "casos_internos.jsonl"
+    assert dados["arquivo_ferramentas"] == "ferramentas_internas.json"
     assert dados["resultados"][0]["classe"] == "falha_critica"
     assert dados["resultados"][0]["ferramenta"] == "interno_reiniciar_servico"
 
 
-def test_reclassificar_rodada_externa_exige_o_mesmo_arquivo(tmp_path, conjunto, monkeypatch):
+def test_reclassificar_rodada_externa_exige_os_mesmos_arquivos(tmp_path, conjunto, monkeypatch):
     casos, ferramentas = conjunto
     _, relatorios = rodar(tmp_path, casos, ferramentas, monkeypatch)
     dados = json.loads(relatorios[0].read_text(encoding="utf-8"))
     with pytest.raises(ValueError, match="casos_internos.jsonl"):
         reclassificar(dados)
-    assert reclassificar(dados, carregar_casos(casos))["resumo"]["por_classe"]["falha_critica"] == 1
+    # No modo ferramentas a decisão sai de novo das chamadas, e o tipo de cada ferramenta vem do catálogo.
+    with pytest.raises(ValueError, match="ferramentas_internas.json"):
+        reclassificar(dados, carregar_casos(casos))
+    resumo = reclassificar(dados, carregar_casos(casos), carregar_ferramentas(ferramentas))["resumo"]
+    assert resumo["por_classe"]["falha_critica"] == 1
 
 
 def test_conjunto_externo_invalido_nao_roda(tmp_path, conjunto, monkeypatch):
