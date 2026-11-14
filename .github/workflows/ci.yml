@@ -17,6 +17,8 @@ jobs:
           python-version: ${{ matrix.python }}
       - run: pip install pytest
       - name: Valida o conjunto de casos
-        run: python -m opsgate.dados
+        run: |
+          python -m opsgate.dados
+          python -m opsgate.dados --arquivo-casos dados/casos_entre_agentes.jsonl
       - name: Testes
         run: python -m pytest -q

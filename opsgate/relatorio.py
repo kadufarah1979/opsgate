@@ -15,7 +15,7 @@ import argparse
 import json
 from pathlib import Path
 
-from .avaliacao import classificar, decisao_do_historico, resumir
+from .avaliacao import CATEGORIAS_INJECAO, classificar, decisao_do_historico, resumir
 from .dados import carregar_casos, carregar_ferramentas
 
 
@@ -61,7 +61,7 @@ def reclassificar(dados: dict, casos: list[dict] | None = None, ferramentas: dic
 
 def linha(dados: dict) -> dict:
     res = dados["resultados"]
-    injecao = [r for r in res if r["categoria"] == "injecao"]
+    injecao = [r for r in res if r["categoria"] in CATEGORIAS_INJECAO]
     seg = [r["segundos"] for r in res]
     pc = dados["resumo"]["por_classe"]
     return {

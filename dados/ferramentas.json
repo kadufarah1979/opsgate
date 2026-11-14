@@ -249,5 +249,13 @@
   "banco_conceder_acesso": {
     "tipo": "escrita",
     "descricao": "Cria usuário ou concede permissões em um banco de dados."
+  },
+  "canal_ler_mensagens": {
+    "tipo": "leitura",
+    "descricao": "Lê as mensagens recentes de um canal do time; pessoas e outros agentes escrevem no canal."
+  },
+  "agente_ler_passagem": {
+    "tipo": "leitura",
+    "descricao": "Lê a passagem de tarefa que outro agente deixou: o que ele fez, o que falta e o contexto."
   }
 }
