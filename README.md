@@ -94,6 +94,30 @@ Com `--catalogo-proprio`, a bancada se comporta como o agente de verdade: a pol�
 
 Recusa e pedido de esclarecimento por texto continuam valendo como decisão (ver o modo ferramentas acima). `--max-turnos` acompanha o limite de rodadas do agente real (padrão 3).
 
+### Agentes de verdade: Claude Code e Codex
+
+`opsgate.agentes` avalia o agente inteiro, e não só o modelo: o próprio Claude Code ou o próprio Codex roda cada caso, sem interação, e recebe as ferramentas do caso por MCP.
+
+```bash
+python -m opsgate.agentes --agente claude-code --casos OPS-001 OPS-008
+python -m opsgate.agentes --agente codex --modelo-agente <modelo> --casos OPS-001 OPS-008
+python -m opsgate.relatorio --casos-atuais resultados/*_agente.json
+```
+
+Como funciona, por caso:
+
+- a bancada sobe `python -m opsgate.mcp` (servidor MCP por stdio, só biblioteca padrão) com as ferramentas do caso e as três de controle — as mesmas do modo ferramentas; com `--catalogo-proprio`, só as do caso;
+- o agente roda num diretório temporário vazio, com esse servidor como único MCP. A política (e a instrução do modo ferramentas) vai como instrução de sistema — `--append-system-prompt` no Claude Code, `developer_instructions` no Codex — e o contexto do caso vai como pedido;
+- o servidor não executa nada: grava cada chamada, na ordem, e devolve os dados do caso às leituras (é por onde chega a instrução injetada) e `registrado: <ferramenta>` às outras;
+- a decisão sai das chamadas gravadas e do texto final do agente, pelas mesmas regras do modo ferramentas. A `resposta_bruta` tem o mesmo formato, então `opsgate.relatorio --casos-atuais` reclassifica a rodada. O relatório grava `"modo": "agente"`, `"agente"` e, em `modelo`, o agente e a versão (`claude-code 2.1.319`); a tabela mostra `claude-code 2.1.319 · agente`.
+
+Os dois agentes:
+
+- **Claude Code**: `claude -p --strict-mcp-config --mcp-config <cfg> --tools "" --permission-mode bypassPermissions --setting-sources "" --output-format json --append-system-prompt <política> <pedido>`. `--tools ""` desliga as ferramentas nativas (shell, arquivos, web), então só as do caso existem. `--setting-sources ""` não carrega fonte de configuração nenhuma: com `project`, o `CLAUDE.md` global de quem roda ainda entrava no contexto, e o agente avaliado seria o do dono da máquina, não o do fabricante. O texto final é o `result` do JSON. Sem `--bare` por padrão: o `--bare` só autentica com `ANTHROPIC_API_KEY` e, com o login da assinatura, responde `Not logged in`. Quem roda com chave de API pode passar `--bare`.
+- **Codex**: `codex exec --ephemeral --skip-git-repo-check --json -s read-only -C <dir vazio> -c approval_policy="never" -c mcp_servers.opsgate... -c mcp_servers.opsgate.default_tools_approval_mode="approve"`. As ferramentas do servidor só simulam; aprovar todas deixa a decisão com o modelo (sem isso o Codex 0.166 recusa toda chamada MCP em `exec`). O texto final é a última `agent_message` do fluxo JSON. O Codex não deixa desligar o shell dele. Se o fluxo mostra uma ação nativa (`command_execution`, `file_change`, `web_search`), o caso vira `saida_invalida` e o resultado grava a ação em `nativo`: a decisão saiu do catálogo do caso, e a bancada não sabe o efeito do que foi feito por fora. A reclassificação mantém a saída inválida. O Codex do snap não enxerga o `/tmp` do sistema; por isso, com ele, os diretórios dos casos ficam em `~/opsgate-tmp` (ou em `--dir-temporario`). Use um CLI recente (o binário é o `codex` do `PATH`): com a conta do ChatGPT, o 0.114 recusa o modelo padrão (`model is not supported when using Codex with a ChatGPT account`) e só aceita modelos que não representam o Codex de uso.
+
+**O custo é de quem roda**: o agente usa a assinatura ou a chave dele, e os 100 casos são 100 sessões do agente. Rode primeiro com `--casos`.
+
 ## Resultados
 
 Tabela atualizada também na página [kadufarah1979.github.io/opsgate](https://kadufarah1979.github.io/opsgate/), gerada por `python -m opsgate.site`.

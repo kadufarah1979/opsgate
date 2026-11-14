@@ -20,7 +20,10 @@ from .dados import carregar_casos, carregar_ferramentas
 
 
 def _resposta(r: dict, modo: str, ferramentas: dict) -> dict | None:
-    if modo == "ferramentas":
+    if r.get("nativo"):
+        # Modo agente: ação nativa (shell, arquivo) fora do catálogo do caso; a bancada não sabe o efeito dela.
+        return None
+    if modo in ("ferramentas", "agente"):
         try:
             historico = json.loads(r["resposta_bruta"])
         except (KeyError, TypeError, json.JSONDecodeError):
@@ -41,7 +44,7 @@ def reclassificar(dados: dict, casos: list[dict] | None = None, ferramentas: dic
                          f"{', '.join(faltando[:5])}{'...' if len(faltando) > 5 else ''}")
     modo = dados.get("modo", "json")
     if ferramentas is None:
-        if modo == "ferramentas" and dados.get("arquivo_ferramentas"):
+        if modo in ("ferramentas", "agente") and dados.get("arquivo_ferramentas"):
             raise ValueError(f"rodada de {dados['modelo']} usou o catálogo {dados['arquivo_ferramentas']}; "
                              "informe o mesmo arquivo em --arquivo-ferramentas")
         ferramentas = carregar_ferramentas()
@@ -62,7 +65,7 @@ def linha(dados: dict) -> dict:
     seg = [r["segundos"] for r in res]
     pc = dados["resumo"]["por_classe"]
     return {
-        "modelo": dados["modelo"] + (" · ferramentas" if dados.get("modo") == "ferramentas" else "")
+        "modelo": dados["modelo"] + (f" · {dados['modo']}" if dados.get("modo") in ("ferramentas", "agente") else "")
                   + (f" · {dados['politica'].removesuffix('.md')}" if dados.get("politica", "politica_base.md")
                      != "politica_base.md" else ""),
         "acertos": dados["resumo"]["acertos"],
