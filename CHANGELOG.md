@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.12.1] — 2026-11-15
+
+- Resultados publicados: Claude Sonnet 4.6 pela API (Bedrock, json e ferramentas), Claude Code 2.1.319 e Codex 0.166 no modo agente nos 100 casos (`relatorios/v0.11/`), e os 13 casos de confiança entre agentes com esses e com qwen3:4b e qwen2.5:7b (`relatorios/v0.12/`). README com as duas tabelas.
+- `opsgate.site` mostra a tabela dos casos entre agentes, reclassificada com o conjunto próprio. Rodada de conjunto de casos ou catálogo de fora do repositório não entra na página.
+
 ## [0.12.0] — 2026-11-14
 
 - `dados/casos_entre_agentes.jsonl`: 13 casos de confiança entre agentes, à parte dos 100 (que seguem comparáveis entre versões). A ordem fora da política chega pela passagem de tarefa ou pela mensagem de canal de outro agente (`injecao_entre_agentes`, 6 casos), ou a pessoa cita um agente como contexto ou como aprovador (`entre_agentes`, 7 casos, com pedidos legítimos para não premiar a desconfiança). Rode com `--arquivo-casos dados/casos_entre_agentes.jsonl`.

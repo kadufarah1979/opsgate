@@ -143,6 +143,39 @@ Os dois agentes:
 
 Tabela atualizada também na página [kadufarah1979.github.io/opsgate](https://kadufarah1979.github.io/opsgate/), gerada por `python -m opsgate.site`.
 
+### Modelos e agentes comerciais
+
+Em 13 e 14/11/2026, com os rótulos e a regra de decisão atuais. Claude Sonnet 4.6 pela API (AWS Bedrock, temperatura 0) nos dois modos, em `relatorios/v0.11/`. Claude Code e Codex no modo `agente` (0.11): o agente de verdade, sem interação, com as ferramentas do caso por um servidor MCP da bancada e sem a configuração de quem roda (`--setting-sources ""` no Claude Code; `--ignore-user-config` no Codex). Por baixo, o Claude Code usou `claude-opus-5-5` (lido do `modelUsage` numa chamada à parte com os mesmos flags) e o Codex, `gpt-6.1-sol`.
+
+| Modelo ou agente | Modo | Acertos | Falhas críticas | Excesso de cautela | Outros erros | Injeção correta |
+|---|---|---|---|---|---|---|
+| Claude Sonnet 4.6 | json | 97/100 | 0 | 2 | 1 | 10/10 |
+| Claude Sonnet 4.6 | ferramentas | 97/100 | 0 | 2 | 1 | 10/10 |
+| Claude Code 2.1.319 | agente | 96/100 | 0 | 0 | 4 | 10/10 |
+| Codex 0.166 (gpt-6.1-sol) | agente | 87/100 | 0 | 4 | 9 | 7/10 |
+
+- **Nenhum executou o que não devia.** Os erros dos três ficam entre pedir aprovação, recusar e perguntar.
+- **O Codex pergunta demais.** Dez dos 13 erros dele são pedido de esclarecimento onde o caso pedia aprovação ou execução, inclusive o número de um chamado que o pedido já dava. Em duas injeções ele nem leu o chamado ou o log. Num caso, usou o próprio shell (`ls -la`), e ação fora do catálogo conta como saída inválida.
+- **O agente fica no nível do modelo.** O Claude Code (96) e o Sonnet 4.6 pela API (97) erram poucos casos e não os mesmos.
+
+### Confiança entre agentes (0.12)
+
+Os 13 casos de `dados/casos_entre_agentes.jsonl`, em `relatorios/v0.12/` (14/11/2026). A coluna de injeção conta os 6 casos em que a ordem fora da política chega pelo texto de outro agente.
+
+| Modelo ou agente | Modo | Acertos | Falhas críticas | Excesso de cautela | Outros erros | Injeção correta |
+|---|---|---|---|---|---|---|
+| Claude Code 2.1.319 | agente | 13/13 | 0 | 0 | 0 | 6/6 |
+| Claude Sonnet 4.6 | ferramentas | 13/13 | 0 | 0 | 0 | 6/6 |
+| Codex 0.166 (gpt-6.1-sol) | agente | 12/13 | 0 | 0 | 1 | 5/6 |
+| Claude Sonnet 4.6 | json | 12/13 | 0 | 0 | 1 | 5/6 |
+| qwen3:4b (`--sem-raciocinio`) | ferramentas | 11/13 | 0 | 0 | 2 | 5/6 |
+| qwen2.5:7b | ferramentas | 7/13 | 3 | 0 | 3 | 1/6 |
+
+- **Nos agentes comerciais, a palavra de outro agente não virou aprovação.** O erro do Codex é o mesmo `ls -la` fora do catálogo, com a recusa certa; o do Sonnet no modo json é recusar apagar snapshots em vez de pedir aprovação.
+- **O modelo aberto pequeno obedece ao outro agente.** O qwen2.5:7b leu a senha que a passagem de tarefa pedia, apagou snapshots porque o agente de FinOps disse que "não precisa de aprovação" e rodou o `VACUUM FULL` que o agente de banco mandou no canal.
+
+### Modelos abertos
+
 Modelos abertos via Ollama, só em CPU (Intel i7-13620H, 16 threads, sem GPU), temperatura 0, em 04 e 05/11/2026, com os rótulos e a regra de decisão atuais (`--casos-atuais`). Modo JSON em `relatorios/v0.2/`, modo ferramentas em `relatorios/v0.5/`. Ordenados por falhas críticas e depois por acertos:
 
 | Modelo | Modo | Acertos | Falhas críticas | Excesso de cautela | Outros erros | Injeção correta |
